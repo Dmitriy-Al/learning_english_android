@@ -6,7 +6,7 @@ import aldmitry.dev.learningenglish.presenter.LessonAggregator
 
 class PassiveVoice : Learnable {
 
-    private val title = "Passive voice, пассивный залог"
+    private val title = "Passive voice"
 
     private val lessonTexts: Map<String, String> = mapOf("Текст приложения" to "App text")
 

@@ -11,6 +11,7 @@ import aldmitry.dev.learningenglish.ui.theme.Blue30
 import aldmitry.dev.learningenglish.view.InfoScreen
 import aldmitry.dev.learningenglish.view.LessonPage
 import aldmitry.dev.learningenglish.view.SettingsScreen
+import aldmitry.dev.learningenglish.view.TextAdditionScreen
 import aldmitry.dev.learningenglish.view.TrainingScreen
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -72,8 +73,8 @@ class MainActivity : ComponentActivity() {
 
             val navController = rememberNavController();
 
-            NavHost(navController = navController, startDestination = "screen_1") {  //
-                composable("screen_1") { // composable - добавляет компонуемый объект в NavGraphBuilder
+            NavHost(navController = navController, startDestination =  mainScreen_view) {  //
+                composable( mainScreen_view) { // composable - добавляет компонуемый объект в NavGraphBuilder
 
                     Screen(
                         { navController.navigate(controllerText.value) },
@@ -83,21 +84,25 @@ class MainActivity : ComponentActivity() {
                     )
                 }
 
-                composable("INFO_CLICK") {
+                composable(addTextScreen_view) { // Экран добавления текста
+
+                    // lesson.value
+                    TextAdditionScreen()
+                }
+
+                composable(info_view) { // Экран инфо
                     InfoScreen()
                 }
 
-                composable("SETTINGS_CLICK") {
+                composable(settings_view) { // Экран настроек
                     SettingsScreen()
                 }
 
-                composable("TRAINING_CLICK") {
-                    val learningHandler = LearningHandler(chooseLearningTypeSection.value, lesson.value);
-                    TrainingScreen(learningHandler)
+                composable("TRAINING_CLICK") { // Экран тренировок
+                     val learningHandler = LearningHandler(chooseLearningTypeSection.value, lesson.value);
+                     TrainingScreen(learningHandler)
                 }
-
             }
-
         }
     }
 }
@@ -107,9 +112,7 @@ class MainActivity : ComponentActivity() {
 fun Screen(buttonClick: () -> Unit, controllerText: MutableState<String>, chooseLesson: MutableState<Learnable>, chooseLearningTypeSection: MutableState<LearningTypeSection>) {
 
     val  lessonStorage = LessonsCollection()
-
     val lessons = lessonStorage.allLessons
-
 
     Column(
         modifier = Modifier
@@ -131,7 +134,7 @@ fun Screen(buttonClick: () -> Unit, controllerText: MutableState<String>, choose
             ) {
                 IconButton(
                     onClick = {
-                        controllerText.value = "INFO_CLICK"
+                        controllerText.value = info_view
                         buttonClick()
                     }
                 ) {
@@ -144,7 +147,7 @@ fun Screen(buttonClick: () -> Unit, controllerText: MutableState<String>, choose
 
                 IconButton(
                     onClick = {
-                        controllerText.value = "SETTINGS_CLICK"
+                        controllerText.value = settings_view
                         buttonClick()
                     }
                 ) {
@@ -156,29 +159,10 @@ fun Screen(buttonClick: () -> Unit, controllerText: MutableState<String>, choose
                 }
             }
 
-
-            TextButton(
-                onClick = { chooseLearningTypeSection.value = LearningTypeSection.ADD_TEXT },
-                modifier = Modifier
-                    .padding(start = 3.dp, end = 3.dp)
-                    //  .fillMaxWidth()
-                    .background(Blue15),
-                colors = ButtonDefaults.textButtonColors(containerColor = if (chooseLearningTypeSection.value == LearningTypeSection.ADD_TEXT) Blue30 else Blue15),
-                border = BorderStroke(1.dp, if (chooseLearningTypeSection.value == LearningTypeSection.ADD_TEXT) Color.White else Blue15) // Blue30  Blue10  Color.White
-
-            ) {
-                Text(
-                    modifier = Modifier.padding(5.dp),
-                    text = LearningTypeSection.ADD_TEXT.title, // "Добавить собственный текст"
-                    style = TextStyle(color = Color.White, fontSize = 15.sp)
-                )
-            }
-
             TextButton(
                 onClick = { chooseLearningTypeSection.value = LearningTypeSection.USERS_TEXTS },
                 modifier = Modifier
                     .padding(start = 3.dp, end = 3.dp)
-                    //  .fillMaxWidth()
                     .background(Blue15),
                 colors = ButtonDefaults.textButtonColors(containerColor = if (chooseLearningTypeSection.value == LearningTypeSection.USERS_TEXTS) Blue30 else Blue15),
                 border = BorderStroke(1.dp, if (chooseLearningTypeSection.value == LearningTypeSection.USERS_TEXTS) Color.White else Blue15) // Blue30  Blue10  Color.White
@@ -187,14 +171,13 @@ fun Screen(buttonClick: () -> Unit, controllerText: MutableState<String>, choose
                 Text(
                     modifier = Modifier.padding(5.dp),
                     text = LearningTypeSection.USERS_TEXTS.title, // "Добавить собственный текст"
-                    style = TextStyle(color = Color.White, fontSize = 15.sp)
+                    style = TextStyle(color = Color.White, fontSize = 18.sp)
                 )
             }
 
             TextButton(
                 onClick = { chooseLearningTypeSection.value = LearningTypeSection.UNITED_TEXTS },
                 modifier = Modifier
-                   // .fillMaxWidth()
                     .padding(bottom = 10.dp, start = 3.dp, end = 3.dp)
                     .background(Blue15),
                 colors = ButtonDefaults.textButtonColors(containerColor = if (chooseLearningTypeSection.value == LearningTypeSection.UNITED_TEXTS) Blue30 else Blue15),
@@ -203,10 +186,9 @@ fun Screen(buttonClick: () -> Unit, controllerText: MutableState<String>, choose
                 Text(
                     modifier = Modifier.padding(5.dp),
                     text = LearningTypeSection.UNITED_TEXTS.title, // "Добавить собственный текст"
-                    style = TextStyle(color = Color.White, fontSize = 15.sp)
+                    style = TextStyle(color = Color.White, fontSize = 18.sp)
                 )
             }
-
 
         }
 
@@ -214,6 +196,7 @@ fun Screen(buttonClick: () -> Unit, controllerText: MutableState<String>, choose
             modifier = Modifier
                 .fillMaxSize()
                 .background(Blue10) // цвет фона между рядами клавиш
+                .padding(bottom = 10.dp)
         ) {
             itemsIndexed(lessons) {
                 _, lesson -> LessonPage(buttonClick, controllerText, chooseLesson, lesson)
@@ -225,137 +208,8 @@ fun Screen(buttonClick: () -> Unit, controllerText: MutableState<String>, choose
 }
 
 
-@Preview(showBackground = true)
-@Composable
-fun Look() {
+const val mainScreen_view = "MAIN_SCREEN_VIEW"
+const val addTextScreen_view = "ADD_TEXT_VIEW"
+const val settings_view = "SETTINGS_VIEW"
+const val info_view = "INFO_VIEW"
 
-    Column(
-        modifier = Modifier
-            .background(Blue10)
-    ) {
-        Column(
-            modifier = Modifier
-                .background(Blue15)
-                .fillMaxWidth(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Row(
-                modifier = Modifier
-                    .background(Blue15)
-                    .padding(10.dp)
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                IconButton(
-                    onClick = {
-
-                    }
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.info_button),
-                        contentDescription = "info_pic",
-                        tint = Color.White
-                    )
-                }
-
-                IconButton(
-                    onClick = {
-
-                    }
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.settings_button),
-                        contentDescription = "settings_pic",
-                        tint = Color.White
-                    )
-                }
-            }
-
-            TextButton(
-                onClick = { /*TODO*/ },
-                modifier = Modifier
-                    .padding(bottom = 30.dp)
-                    .background(Blue15),
-                colors = ButtonDefaults.textButtonColors(containerColor = Blue30),
-                border = BorderStroke(2.dp, Color.White) // Blue30  Blue10  Color.White
-            ) {
-                Text(
-                    modifier = Modifier.padding(5.dp),
-                    text = "Добавить собственный текст", // "Добавить собственный текст"
-                    style = TextStyle(color = Color.White, fontSize = 18.sp)
-                )
-            }
-
-
-                /*
-
-                            Row(
-                horizontalArrangement = Arrangement.SpaceAround,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-
-                Box(
-                    modifier = Modifier
-                        .padding(bottom = 10.dp)
-                        .width(120.dp)
-                        .clickable { chooseLearningTypeSection.value = LearningTypeSection.UNITED_TEXTS }
-                        .border(width = 2.dp,
-                            color = if (chooseLearningTypeSection.value == LearningTypeSection.UNITED_TEXTS) Color.White else Blue15,
-                            shape = RoundedCornerShape(5.dp))
-                        .background(Blue15, shape = RoundedCornerShape(5.dp))
-
-                ) {
-                    Text(
-                        modifier = Modifier
-                            .padding(7.dp),
-                        text = LearningTypeSection.UNITED_TEXTS.title,
-                        style = TextStyle(color = Color.White, fontSize = 14.sp)
-                    )
-                }
-
-                Box(
-                    modifier = Modifier
-                        .padding(bottom = 10.dp)
-                        .width(120.dp)
-                        .clickable { chooseLearningTypeSection.value = LearningTypeSection.USERS_TEXTS }
-                        .border(width = 2.dp,
-                            color = if (chooseLearningTypeSection.value == LearningTypeSection.USERS_TEXTS) Color.White else Blue15,
-                            shape = RoundedCornerShape(5.dp))
-                        .background(Blue15, shape = RoundedCornerShape(5.dp))
-                ) {
-                    Text(
-                        modifier = Modifier
-                            .padding(7.dp),
-                        text = LearningTypeSection.USERS_TEXTS.title,
-                        style = TextStyle(color = Color.White, fontSize = 14.sp)
-                    )
-                }
-            }
-                 */
-
-        }
-
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Blue10) // цвет фона между рядами клавиш
-        ) {
-
-
-        }
-    }
-}
-
-
-
-
-
-
-
-
-
-/*
-
-
- */

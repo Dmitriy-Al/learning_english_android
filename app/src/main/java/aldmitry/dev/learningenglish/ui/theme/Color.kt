@@ -14,8 +14,9 @@ val Purple10 = Color(0xFF9118F8)
 val PurpleLight = Color(0xFFAC4EFD)
 val DeepPurple = Color(0xFF23003D)
 
-
 val Blue50 = Color(0xFF03A376) // 0xFF16C2A8
 val Blue30 = Color(0xFF099EB1) // 0xFF1DA3C4
 val Blue15 = Color(0xFF24698F) // 0xFF24698F
 val Blue10 = Color(0xFF003C5C) // 0xFF00486F
+
+val Yellow30 = Color(0xFFFACE2E) // 0xFF00486F

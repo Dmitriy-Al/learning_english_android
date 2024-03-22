@@ -12,10 +12,10 @@ import aldmitry.dev.learningenglish.model.lessons.VariousTexts
 import aldmitry.dev.learningenglish.model.lessons.WordsForLearning
 
 data class LessonsCollection(
-    val allLessons: List<Learnable> = listOf(PresentSimple(), PresentContinuous(), PassiveVoice(),
+    val allLessons: List<Learnable> = listOf(PresentContinuous(), PresentSimple(), PassiveVoice(),
         PerfectTense(), DateAndTime(), MuchMany(), Compares(), VariousTexts(), WordsForLearning()),
 
-    val sharedLessons: List<Learnable> = listOf(PresentSimple(), PresentContinuous(), PassiveVoice(),
+    val sharedLessons: List<Learnable> = listOf(PresentContinuous(), PresentSimple(), PassiveVoice(),
         PerfectTense(), DateAndTime(), MuchMany(), Compares(), VariousTexts())
 )
 
