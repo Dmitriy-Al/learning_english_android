@@ -2,7 +2,8 @@ package aldmitry.dev.learningenglish.model.lessons
 
 import aldmitry.dev.learningenglish.model.Learnable
 import aldmitry.dev.learningenglish.presenter.LearningTypeSection
-import aldmitry.dev.learningenglish.presenter.LessonAggregator
+import aldmitry.dev.learningenglish.presenter.LessonCreator
+import aldmitry.dev.learningenglish.presenter.LessonUnit
 
 class PresentSimple : Learnable {
 
@@ -11,7 +12,7 @@ class PresentSimple : Learnable {
     private val presentSimple: Map<String, String> = mapOf("Ты пойдешь домой" to "You will go home", "Ты не пойдешь домой" to "You will not go home", "Ты ходил домой" to "You went home")
 
 
-    val lessonTexts = mapOf("Я люблю" to "I love", "Я не люблю" to "I do not love", "Я люблю?" to "do I love", "Я буду любить" to "I will love", "Я не буду любить" to "I will not love", "Я буду любить?" to "will I love",
+    private val appLessonTexts = mapOf("Я люблю" to "I love", "Я не люблю" to "I do not love", "Я люблю?" to "do I love", "Я буду любить" to "I will love", "Я не буду любить" to "I will not love", "Я буду любить?" to "will I love",
         "Я любил" to "I loved", "Я не любил" to "I did not love", "Я любил?" to "did I love", " Я иду" to "I go", "Я не иду" to "I do not go", "Я иду?" to "do I go", "Я буду ходить" to "I will go",
         "Я не буду ходить" to "I will not go", "Я буду ходить?" to "will I go", "Я ходил" to "I went", "Я не ходил" to "I did not go", "Я ходил?" to "did I go", " Я смотрю" to "I look", "Я не смотрю" to "I do not look",
         "Я смотрю?" to "do I look", "Я буду смотреть" to "I will look", "Я не буду смотреть" to "I will not look", "Я буду смотреть?" to "will I look", "Я смотрел" to "I looked", "Я не смотрел" to "I did not look",
@@ -48,8 +49,8 @@ class PresentSimple : Learnable {
         return title
     }
 
-    override fun takeLesson(learningTypeSection: LearningTypeSection): Map<String, String> {
-        return LessonAggregator().buildLesson(learningTypeSection, lessonTexts)
+    override fun takeLesson(learningTypeSection: LearningTypeSection, lessonTexts: Map<String, String>): List<LessonUnit> {
+        return LessonCreator().createLesson(learningTypeSection, lessonTexts, appLessonTexts)
     }
 
 }

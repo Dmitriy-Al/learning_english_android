@@ -1,10 +1,10 @@
-package aldmitry.dev.learningenglish.model.database
+package aldmitry.dev.learningenglish.database
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "lessons_texts")
-data class LessonsTexts(
+@Entity(tableName = "lessons_table")
+data class UserLesson(
 
     @PrimaryKey
     val englishText: String,

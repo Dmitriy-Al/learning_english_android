@@ -1,4 +1,4 @@
-package aldmitry.dev.learningenglish.model.database
+package aldmitry.dev.learningenglish.database
 
 import androidx.room.Dao
 import androidx.room.Delete
@@ -10,13 +10,14 @@ import androidx.room.Query
 interface Dao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun addLessonText(entity: LessonsTexts)
+    fun addLessonInDb(entity: UserLesson)
+
 
     @Delete
-    fun deleteLessonText(entity: LessonsTexts)
+    fun deleteLessonInDb(entity: UserLesson)
 
 
-    @Query("SELECT * FROM lessons_texts")
-    fun receiveTextByLessonTitle(): List<LessonsTexts>
+    @Query("SELECT * FROM lessons_table")
+    fun receiveLessonByTitle(): List<UserLesson>
 
 }

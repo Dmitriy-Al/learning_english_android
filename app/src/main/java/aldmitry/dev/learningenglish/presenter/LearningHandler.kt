@@ -1,20 +1,21 @@
 package aldmitry.dev.learningenglish.presenter
 
 import aldmitry.dev.learningenglish.model.Learnable
+import aldmitry.dev.learningenglish.database.Database
+import aldmitry.dev.learningenglish.database.UserLesson
 
-class LearningHandler(chooseLearningTypeSection: LearningTypeSection, lesson: Learnable) {
+class LearningHandler(val chooseLearningTypeSection: LearningTypeSection, val lesson: Learnable, val userLessons: MutableList<UserLesson>) {
 
-    val lessonCollector: Map<String, String>
+    fun receiveLessonTextCollector(): List<LessonUnit> {
+        val userLessonText = mutableMapOf<String, String>()
 
-    /** Map lessonCollector получает тексты уроков из функции takeLesson() объектов классов,
-     * имплементирующих интерфейс Learnable: (PresentSimple, PresentContinuous, DateAndTime, т.д.)
-     * / Map lessonCollector receives lesson texts from the fun takeLesson() of class objects
-     * implementing the Learnable interface: (PresentSimple, PresentContinuous, DateAndTime, etc.)
-     * */
-    init {
-        lessonCollector = lesson.takeLesson(chooseLearningTypeSection)
+        for (elem in userLessons) {
+            if (elem.lessonTitle == lesson.receiveTitle()) {
+                userLessonText[elem.russianText] = elem.englishText
+            }
+        }
+        return lesson.takeLesson(chooseLearningTypeSection, userLessonText)
     }
-
 
 
 }

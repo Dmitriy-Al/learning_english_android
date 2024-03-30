@@ -1,6 +1,8 @@
 package aldmitry.dev.learningenglish
 
 import aldmitry.dev.learningenglish.model.Learnable
+import aldmitry.dev.learningenglish.database.Database
+import aldmitry.dev.learningenglish.database.UserLesson
 import aldmitry.dev.learningenglish.model.lessons.PresentSimple
 import aldmitry.dev.learningenglish.presenter.LearningHandler
 import aldmitry.dev.learningenglish.presenter.LearningTypeSection
@@ -8,29 +10,25 @@ import aldmitry.dev.learningenglish.presenter.LessonsCollection
 import aldmitry.dev.learningenglish.ui.theme.Blue10
 import aldmitry.dev.learningenglish.ui.theme.Blue15
 import aldmitry.dev.learningenglish.ui.theme.Blue30
-import aldmitry.dev.learningenglish.view.InfoScreen
+import aldmitry.dev.learningenglish.view.InfoView
 import aldmitry.dev.learningenglish.view.LessonPage
 import aldmitry.dev.learningenglish.view.SettingsScreen
-import aldmitry.dev.learningenglish.view.TextAdditionScreen
+import aldmitry.dev.learningenglish.view.TextEditionView
 import aldmitry.dev.learningenglish.view.TrainingScreen
+import aldmitry.dev.learningenglish.view.TreiningSOSIN
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -45,17 +43,30 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.room.Room
 
 
 class MainActivity : ComponentActivity() {
-
     override fun onCreate(savedInstanceState: Bundle?) {
+
+        val database = Room.databaseBuilder(
+            applicationContext,
+            Database::class.java,
+            "lessons_db"
+        ).build()
+
+//////////////////////////////////////////////////////////////////////
+        val userLessons = mutableListOf<UserLesson>()
+        Thread {
+            userLessons.addAll(database.lessonsDao().receiveLessonByTitle())
+        }.start()
+//////////////////////////////////////////////////////////////////////
+
         super.onCreate(savedInstanceState)
         setContent {
 
@@ -85,22 +96,22 @@ class MainActivity : ComponentActivity() {
                 }
 
                 composable(addTextScreen_view) { // Экран добавления текста
-
-                    // lesson.value
-                    TextAdditionScreen()
+                   TextEditionView(lesson.value.receiveTitle(), database)//
                 }
 
                 composable(info_view) { // Экран инфо
-                    InfoScreen()
+                    InfoView("Создатель приложения:\nАлимов дмитрий\n\nсервера:\nШкитина Александра")
                 }
 
                 composable(settings_view) { // Экран настроек
                     SettingsScreen()
                 }
 
-                composable("TRAINING_CLICK") { // Экран тренировок
-                     val learningHandler = LearningHandler(chooseLearningTypeSection.value, lesson.value);
-                     TrainingScreen(learningHandler)
+                composable(training_view) { // Экран тренировок
+                    val learningHandler = LearningHandler(chooseLearningTypeSection.value, lesson.value, userLessons);
+                    if (learningHandler.receiveLessonTextCollector().isEmpty()) InfoView("\n\n\n\n\n\nУ вас ещё нет добавленных слов в этой категории!") else TrainingScreen(learningHandler.receiveLessonTextCollector())
+                    //  val learningHandler = LearningHandler(chooseLearningTypeSection.value, lesson.value, database);
+                  //  TrainingScreen(learningHandler)TreiningSOSIN
                 }
             }
         }
@@ -128,7 +139,7 @@ fun Screen(buttonClick: () -> Unit, controllerText: MutableState<String>, choose
             Row(
                 modifier = Modifier
                     .background(Blue15)
-                    .padding(10.dp)
+                    .padding(top = 5.dp, start = 10.dp, end = 10.dp)
                     .fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
@@ -160,12 +171,28 @@ fun Screen(buttonClick: () -> Unit, controllerText: MutableState<String>, choose
             }
 
             TextButton(
+                onClick = { chooseLearningTypeSection.value = LearningTypeSection.SHARE_TEXTS },
+                modifier = Modifier
+                    .padding(bottom = 5.dp, start = 3.dp, end = 3.dp)
+                    .background(Blue15),
+                colors = ButtonDefaults.textButtonColors(containerColor = if (chooseLearningTypeSection.value == LearningTypeSection.SHARE_TEXTS) Blue30 else Blue15),
+                border = BorderStroke(3.dp, if (chooseLearningTypeSection.value == LearningTypeSection.SHARE_TEXTS) Color.White else Blue15) // Blue30  Blue10  Color.White
+
+            ) {
+                Text(
+                    modifier = Modifier.padding(5.dp),
+                    text = LearningTypeSection.SHARE_TEXTS.title, // "Добавить собственный текст"
+                    style = TextStyle(color = Color.White, fontSize = 18.sp)
+                )
+            }
+
+            TextButton(
                 onClick = { chooseLearningTypeSection.value = LearningTypeSection.USERS_TEXTS },
                 modifier = Modifier
-                    .padding(start = 3.dp, end = 3.dp)
+                    .padding(bottom = 5.dp, start = 3.dp, end = 3.dp)
                     .background(Blue15),
                 colors = ButtonDefaults.textButtonColors(containerColor = if (chooseLearningTypeSection.value == LearningTypeSection.USERS_TEXTS) Blue30 else Blue15),
-                border = BorderStroke(1.dp, if (chooseLearningTypeSection.value == LearningTypeSection.USERS_TEXTS) Color.White else Blue15) // Blue30  Blue10  Color.White
+                border = BorderStroke(3.dp, if (chooseLearningTypeSection.value == LearningTypeSection.USERS_TEXTS) Color.White else Blue15) // Blue30  Blue10  Color.White
 
             ) {
                 Text(
@@ -181,7 +208,7 @@ fun Screen(buttonClick: () -> Unit, controllerText: MutableState<String>, choose
                     .padding(bottom = 10.dp, start = 3.dp, end = 3.dp)
                     .background(Blue15),
                 colors = ButtonDefaults.textButtonColors(containerColor = if (chooseLearningTypeSection.value == LearningTypeSection.UNITED_TEXTS) Blue30 else Blue15),
-                border = BorderStroke(1.dp, if (chooseLearningTypeSection.value == LearningTypeSection.UNITED_TEXTS) Color.White else Blue15) // , shape = RoundedCornerShape(10.dp)
+                border = BorderStroke(3.dp, if (chooseLearningTypeSection.value == LearningTypeSection.UNITED_TEXTS) Color.White else Blue15) // , shape = RoundedCornerShape(10.dp)
             ) {
                 Text(
                     modifier = Modifier.padding(5.dp),
@@ -207,9 +234,9 @@ fun Screen(buttonClick: () -> Unit, controllerText: MutableState<String>, choose
     }
 }
 
-
 const val mainScreen_view = "MAIN_SCREEN_VIEW"
 const val addTextScreen_view = "ADD_TEXT_VIEW"
+const val training_view = "TRAINING_VIEW"
 const val settings_view = "SETTINGS_VIEW"
 const val info_view = "INFO_VIEW"
 

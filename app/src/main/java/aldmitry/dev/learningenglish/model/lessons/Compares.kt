@@ -2,20 +2,21 @@ package aldmitry.dev.learningenglish.model.lessons
 
 import aldmitry.dev.learningenglish.model.Learnable
 import aldmitry.dev.learningenglish.presenter.LearningTypeSection
-import aldmitry.dev.learningenglish.presenter.LessonAggregator
+import aldmitry.dev.learningenglish.presenter.LessonCreator
+import aldmitry.dev.learningenglish.presenter.LessonUnit
 
 class Compares : Learnable {
 
     private val title = "Сравнения"
 
-    private val lessonTexts: Map<String, String> = mapOf("Текст приложения" to "App text", "Лососни тунца" to "App text", "Пришел писец" to "App text")
+    private val appLessonTexts = mapOf("Я люблю" to "I love", "Я не люблю" to "I do not love", "Я люблю?" to "do I love")
 
     override fun receiveTitle(): String {
         return title
     }
 
-    override fun takeLesson(learningTypeSection: LearningTypeSection): Map<String, String> {
-        return LessonAggregator().buildLesson(learningTypeSection, lessonTexts)
+    override fun takeLesson(learningTypeSection: LearningTypeSection, lessonTexts: Map<String, String>): List<LessonUnit> {
+        return LessonCreator().createLesson(learningTypeSection, lessonTexts, appLessonTexts)
     }
 
 

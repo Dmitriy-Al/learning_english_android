@@ -1,17 +1,13 @@
 package aldmitry.dev.learningenglish.view
 
-import aldmitry.dev.learningenglish.MainActivity
 import aldmitry.dev.learningenglish.addTextScreen_view
 import aldmitry.dev.learningenglish.model.Learnable
+import aldmitry.dev.learningenglish.training_view
 import aldmitry.dev.learningenglish.ui.theme.Blue10
-import aldmitry.dev.learningenglish.ui.theme.Blue50
+import aldmitry.dev.learningenglish.ui.theme.Green50
 import aldmitry.dev.learningenglish.ui.theme.Yellow30
-import android.app.Activity
-import android.content.Intent
-import android.os.Bundle
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -31,8 +27,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.content.ContextCompat.startActivity
-
 
 
 // @Preview(showBackground = true)
@@ -45,12 +39,13 @@ fun LessonPage(buttonClick: () -> Unit, controllerText: MutableState<String>, ch
             .fillMaxWidth()
             .padding(top = 10.dp, start = 10.dp, end = 10.dp)
             .clickable {
-                controllerText.value = "TRAINING_CLICK"
+                controllerText.value = training_view
                 chooseLesson.value = lesson
                 buttonClick()
             },
-        backgroundColor = Blue50,
+        backgroundColor = Green50,
         shape = RoundedCornerShape(10.dp),
+        border = BorderStroke(1.dp, Color.White)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -71,7 +66,7 @@ fun LessonPage(buttonClick: () -> Unit, controllerText: MutableState<String>, ch
                 modifier = Modifier
                     .padding(3.dp)
                     .background(Yellow30, RoundedCornerShape(10.dp)),
-                border = BorderStroke(2.dp, Color.White),
+                border = BorderStroke(1.dp, Color.White),
                 shape = RoundedCornerShape(10.dp),
                 onClick = {
                     controllerText.value = addTextScreen_view
@@ -105,7 +100,7 @@ fun LessonPage() {
             .clickable {
 
             },
-        backgroundColor = Blue50,
+        backgroundColor = Green50,
         shape = RoundedCornerShape(10.dp)
     ) {
         Row(
