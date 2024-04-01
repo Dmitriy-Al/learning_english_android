@@ -1,12 +1,19 @@
 package aldmitry.dev.learningenglish
 
 import aldmitry.dev.learningenglish.model.Learnable
-import aldmitry.dev.learningenglish.database.Database
+import aldmitry.dev.learningenglish.database.LessonDatabase
 import aldmitry.dev.learningenglish.database.UserLesson
+import aldmitry.dev.learningenglish.model.lessons.Compares
+import aldmitry.dev.learningenglish.model.lessons.DateAndTime
+import aldmitry.dev.learningenglish.model.lessons.MuchMany
+import aldmitry.dev.learningenglish.model.lessons.PassiveVoice
+import aldmitry.dev.learningenglish.model.lessons.PerfectTense
+import aldmitry.dev.learningenglish.model.lessons.PresentContinuous
 import aldmitry.dev.learningenglish.model.lessons.PresentSimple
+import aldmitry.dev.learningenglish.model.lessons.VariousTexts
+import aldmitry.dev.learningenglish.model.lessons.WordsForLearning
 import aldmitry.dev.learningenglish.presenter.LearningHandler
 import aldmitry.dev.learningenglish.presenter.LearningTypeSection
-import aldmitry.dev.learningenglish.presenter.LessonsCollection
 import aldmitry.dev.learningenglish.ui.theme.Blue10
 import aldmitry.dev.learningenglish.ui.theme.Blue15
 import aldmitry.dev.learningenglish.ui.theme.Blue30
@@ -15,7 +22,6 @@ import aldmitry.dev.learningenglish.view.LessonPage
 import aldmitry.dev.learningenglish.view.SettingsScreen
 import aldmitry.dev.learningenglish.view.TextEditionView
 import aldmitry.dev.learningenglish.view.TrainingScreen
-import aldmitry.dev.learningenglish.view.TreiningSOSIN
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -52,20 +58,21 @@ import androidx.room.Room
 
 
 class MainActivity : ComponentActivity() {
+
+
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
 
-        val database = Room.databaseBuilder(
-            applicationContext,
-            Database::class.java,
-            "lessons_db"
-        ).build()
+     val database = LessonDatabase.createDb(this)
 
-//////////////////////////////////////////////////////////////////////
-        val userLessons = mutableListOf<UserLesson>()
-        Thread {
-            userLessons.addAll(database.lessonsDao().receiveLessonByTitle())
-        }.start()
-//////////////////////////////////////////////////////////////////////
+        /*
+    val database = Room.databaseBuilder(
+        applicationContext,
+        LessonDatabase::class.java,
+        "lessons_db"
+    ).build()
+*/
 
         super.onCreate(savedInstanceState)
         setContent {
@@ -82,11 +89,15 @@ class MainActivity : ComponentActivity() {
                 mutableStateOf<Learnable>(PresentSimple()) // TODO <Learnable>
             }
 
+            val userLessons = remember {
+                mutableStateOf(receiveUserLessons(database))
+            }
+
             val navController = rememberNavController();
 
-            NavHost(navController = navController, startDestination =  mainScreen_view) {  //
+            NavHost(navController = navController, startDestination =  mainScreen_view) {
                 composable( mainScreen_view) { // composable - добавляет компонуемый объект в NavGraphBuilder
-
+                    userLessons.value = receiveUserLessons(database)
                     Screen(
                         { navController.navigate(controllerText.value) },
                         controllerText,
@@ -108,10 +119,8 @@ class MainActivity : ComponentActivity() {
                 }
 
                 composable(training_view) { // Экран тренировок
-                    val learningHandler = LearningHandler(chooseLearningTypeSection.value, lesson.value, userLessons);
+                    val learningHandler = LearningHandler(chooseLearningTypeSection.value, lesson.value, userLessons.value);
                     if (learningHandler.receiveLessonTextCollector().isEmpty()) InfoView("\n\n\n\n\n\nУ вас ещё нет добавленных слов в этой категории!") else TrainingScreen(learningHandler.receiveLessonTextCollector())
-                    //  val learningHandler = LearningHandler(chooseLearningTypeSection.value, lesson.value, database);
-                  //  TrainingScreen(learningHandler)TreiningSOSIN
                 }
             }
         }
@@ -119,11 +128,14 @@ class MainActivity : ComponentActivity() {
 }
 
 
+
+
+
 @Composable
 fun Screen(buttonClick: () -> Unit, controllerText: MutableState<String>, chooseLesson: MutableState<Learnable>, chooseLearningTypeSection: MutableState<LearningTypeSection>) {
 
-    val  lessonStorage = LessonsCollection()
-    val lessons = lessonStorage.allLessons
+    val lessonCategories = listOf(PresentContinuous(), PresentSimple(), PassiveVoice(),DateAndTime(),
+        PerfectTense(), MuchMany(), Compares(), VariousTexts(), WordsForLearning())
 
     Column(
         modifier = Modifier
@@ -225,7 +237,7 @@ fun Screen(buttonClick: () -> Unit, controllerText: MutableState<String>, choose
                 .background(Blue10) // цвет фона между рядами клавиш
                 .padding(bottom = 10.dp)
         ) {
-            itemsIndexed(lessons) {
+            itemsIndexed(lessonCategories) {
                 _, lesson -> LessonPage(buttonClick, controllerText, chooseLesson, lesson)
 
             }
@@ -233,6 +245,16 @@ fun Screen(buttonClick: () -> Unit, controllerText: MutableState<String>, choose
         }
     }
 }
+
+
+fun receiveUserLessons(database: LessonDatabase): MutableList<UserLesson> {
+    val userLessons = mutableListOf<UserLesson>()
+    Thread {
+        userLessons.addAll(database.lessonsDao().receiveLessons())
+    }.start()
+    return userLessons
+}
+
 
 const val mainScreen_view = "MAIN_SCREEN_VIEW"
 const val addTextScreen_view = "ADD_TEXT_VIEW"

@@ -1,6 +1,6 @@
 package aldmitry.dev.learningenglish.view
 
-import aldmitry.dev.learningenglish.database.Database
+import aldmitry.dev.learningenglish.database.LessonDatabase
 import aldmitry.dev.learningenglish.database.UserLesson
 import aldmitry.dev.learningenglish.presenter.DbTextEditor
 import aldmitry.dev.learningenglish.ui.theme.Blue10
@@ -40,7 +40,7 @@ import androidx.compose.ui.unit.sp
 @SuppressLint("SuspiciousIndentation")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TextEditionView(lessonTitle: String, database: Database) { //
+fun TextEditionView(lessonTitle: String, database: LessonDatabase) { //
 
     val flagOfDelete = remember {
         mutableStateOf(false)
@@ -78,13 +78,12 @@ fun TextEditionView(lessonTitle: String, database: Database) { //
     ) {
         LazyColumn(
             modifier = Modifier
-                .weight(1F)
+                .weight(0.5F)
                 .fillMaxWidth()
                 .background(Blue10) // цвет фона между рядами клавиш
                 .padding(bottom = 10.dp)
         ) {
-            itemsIndexed(lessonList.value.filter { it.lessonTitle == lessonTitle }
-                .sortedBy { it.russianText }) { _, lesson -> // TODO filter { it.lessonTitle == lessonTitle }
+            itemsIndexed(lessonList.value) { _, lesson ->
                 UserLessonPage(
                     lesson,
                     database,
@@ -99,9 +98,9 @@ fun TextEditionView(lessonTitle: String, database: Database) { //
         Column(
             modifier = Modifier
                 .background(Blue15)
-                .weight(0.6F)
+                .weight(0.5F)
                 .fillMaxSize(),
-            verticalArrangement = Arrangement.Top,
+            verticalArrangement = Arrangement.Bottom, // verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
@@ -170,7 +169,7 @@ fun TextEditionView(lessonTitle: String, database: Database) { //
                     .background(Blue10)
                     .border(10.dp, Blue10)
                     .fillMaxWidth()
-                    .padding(top = 10.dp)
+                    .padding(top = 15.dp)
                     .weight(0.3F),
                 textStyle = TextStyle(fontSize = 18.sp, color = if (isValidText)Color.White else Red30),
                 colors = TextFieldDefaults.outlinedTextFieldColors(Blue10)
@@ -194,16 +193,15 @@ fun TextEditionView(lessonTitle: String, database: Database) { //
 
             Spacer(
                 modifier = Modifier
-                    .width(30.dp)
+                    .width(10.dp)
                     .background(Blue15)
                     .weight(0.1F)
             )
-            /* */
-
         }
     }
 
-    Thread { lessonList.value = database.lessonsDao().receiveLessonByTitle() }.start()
+    Thread { lessonList.value = database.lessonsDao().receiveLessons()
+        .filter { it.lessonTitle == lessonTitle }.sortedBy { it.russianText } }.start()
     flagOfDelete.value = !flagOfDelete.value
 
 }

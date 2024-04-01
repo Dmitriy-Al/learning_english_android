@@ -12,12 +12,15 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
@@ -26,6 +29,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -73,18 +77,18 @@ fun TrainingScreen(lessonUnits : List<LessonUnit>) {
         mutableStateOf("")
     }
 
+    val wrongAnswerText = remember { // введеный с клавиатуры текст
+        mutableStateOf("")
+    }
 
     val answerCounter = remember { // счетчик
         mutableStateOf(0)
     }
 
-
     val previewLessonText = remember { // урок
         mutableStateOf(lessonUnit.value.englishText)
     }
 
-   // midScreenText.value = "✔ ${lessonUnit.value.englishText}" // оригинальный eng текст на экране
-    // lowScreenText.value = "✘ ${lowScreenText.value}" // user eng текст на экране
 
     when {
         lessonUnit.value.keyButtonsWords.isEmpty() && inputtedText.value.isNotEmpty() && !isAnswer.value || inputtedText.value.isNotEmpty() &&
@@ -95,16 +99,23 @@ fun TrainingScreen(lessonUnits : List<LessonUnit>) {
                 topScreenText.value = rightAnswer_text // return
                 midScreenText.value = "✔ ${lessonUnit.value.englishText}" // оригинальный eng текст на экране
                 inputtedText.value = ""
-
                 var newLessonUnit = lessonUnits[(lessonUnits.indices).random()]
-                while (newLessonUnit.englishText == previewLessonText.value) {
-                    newLessonUnit = lessonUnits[(lessonUnits.indices).random()]
+
+                for (i in 0 .. 10) { // цикл конечен для того случая, когда englishText == ruText и урок инвертирован
+                    if (lessonUnits.size < 2 && newLessonUnit.englishText != previewLessonText.value) {
+                        return
+                    } else {
+                        newLessonUnit = lessonUnits[(lessonUnits.indices).random()]
+                    }
                 }
+
                 lessonUnit.value = newLessonUnit
+                previewLessonText.value = newLessonUnit.englishText
             }  else {
                 topScreenText.value = wrongAnswer_text // оригинальный eng текст на экране
                 midScreenText.value = "✔ ${lessonUnit.value.englishText}" // оригинальный eng текст на экране
-                inputtedText.value = "✘ ${inputtedText.value}" // user eng текст на экране
+                wrongAnswerText.value = "✘ ${inputtedText.value}" // user eng текст на экране
+                inputtedText.value = ""
             }
             isAnswer.value = true
             keyBoardField.value = answer_field
@@ -129,7 +140,8 @@ fun TrainingScreen(lessonUnits : List<LessonUnit>) {
             inputtedText.value = ""
             topScreenText.value = "" // Текст для перевода на экране
             midScreenText.value = ""
-            isAnswer.value = false
+            wrongAnswerText.value = ""
+                isAnswer.value = false
         }
     }
 
@@ -140,44 +152,58 @@ fun TrainingScreen(lessonUnits : List<LessonUnit>) {
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
 
+        Spacer(modifier = Modifier
+            .weight(0.10F)
+            .padding(bottom = 30.dp)
+            .background(Blue15)
+            .fillMaxWidth()
+        )
+
+        Row(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                modifier = Modifier
+                    .padding(top = 5.dp, bottom = 10.dp, start = 20.dp),
+                text = "Ответов: ${answerCounter.value}", // "Введите перевод текста:
+                style = TextStyle(color = Color.White, fontSize = 18.sp),
+                textAlign = TextAlign.Start
+            )
+        }
+
         Column(
             modifier = Modifier
+                .weight(0.4F)
                 .background(Blue15)
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .padding(bottom = 20.dp, top = 10.dp, start = 10.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = if (isAnswer.value) Arrangement.Bottom else Arrangement.Top // TODO
+            verticalArrangement = Arrangement.Bottom
         ) {
-
-            Row(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    modifier = Modifier
-                        .padding(top = 30.dp, bottom = 10.dp, start = 20.dp, end = 20.dp),
-                    text = "Ответов: ${answerCounter.value}", // "Введите перевод текста:
-                    style = TextStyle(color = Color.White, fontSize = 18.sp),
-                    textAlign = TextAlign.Start
-                )
-            }
             Text(
-                modifier = Modifier.padding(top = 10.dp, bottom = 20.dp),
+                modifier = Modifier.padding(bottom = 10.dp),
                 text = topScreenText.value, // "Введите перевод текста:
                 style = TextStyle(color = Color.White, fontSize = if (isAnswer.value) 25.sp else 21.sp)
             )
 
             Text(
-                modifier = Modifier.padding(20.dp),
+                modifier = Modifier.padding(10.dp),
                 text = midScreenText.value,
-                style = TextStyle(color = if (isAnswer.value) Green30 else Color.White, fontSize = 23.sp) // if (isAnswer.value) 23.sp else 22.sp)
+                style = TextStyle(color = if (isAnswer.value) Green30 else Color.White, fontSize = 23.sp)
             )
 
             Text(
-                modifier = Modifier.padding(20.dp),
-                text = inputtedText.value,
-                style = TextStyle(color = if (isAnswer.value) Red30 else Color.White, fontSize = 23.sp) // if (isAnswer.value) 23.sp else 22.sp)
+                modifier = Modifier.padding(top = 10.dp, start = 10.dp, end = 10.dp),
+                text = wrongAnswerText.value,
+                style = TextStyle(color = if (isAnswer.value) Red30 else Color.White, fontSize = 23.sp)
             )
-
         }
+
+            Text(
+                modifier = Modifier.padding(bottom = 30.dp),
+                text = inputtedText.value,
+                style = TextStyle(color = Color.White, fontSize = 23.sp)
+            )
 
 
         Column(
@@ -210,7 +236,6 @@ fun InputLesson(inputtedText: MutableState<String>) { // keyList: List<String>, 
 
     Column(
         modifier = Modifier
-            .padding(bottom = 30.dp)
             .background(Blue10)
             .fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -222,7 +247,7 @@ fun InputLesson(inputtedText: MutableState<String>) { // keyList: List<String>, 
                 if (isTextValid) inputtedText.value = textFromField.value
             },
             modifier = Modifier
-                .padding(bottom = 20.dp, top = 30.dp)
+                .padding(bottom = 10.dp, top = 30.dp) // .padding(bottom = 20.dp, top = 30.dp)
                 .background(Blue10),
             colors = ButtonDefaults.textButtonColors(containerColor = if (textFromField.value.isEmpty() || !isTextValid) Blue10 else Green50),
             border = BorderStroke(2.dp, Color.White) // Blue30  Blue10  Color.White
@@ -239,7 +264,7 @@ fun InputLesson(inputtedText: MutableState<String>) { // keyList: List<String>, 
                 Text(
                     text = "✎ Введите текст",
                     color = Color.LightGray,
-                    fontSize = 14.sp
+                    fontSize = 16.sp
                 )
             },
             value = textFromField.value,
@@ -248,130 +273,69 @@ fun InputLesson(inputtedText: MutableState<String>) { // keyList: List<String>, 
                 .background(Blue10)
                 .border(10.dp, Blue10)
                 .fillMaxWidth()
-                .padding(bottom = 50.dp, top = 20.dp),
-            textStyle = TextStyle(fontSize = 18.sp, color = if (isTextValid) Color.White else  Red30),
+                .padding(bottom = 50.dp, top = 10.dp),
+            textStyle = TextStyle(fontSize = 20.sp, color = if (isTextValid) Color.White else  Red30),
             colors = TextFieldDefaults.outlinedTextFieldColors(Blue10)
         )
     }
+
+    Spacer(
+        modifier = Modifier.padding(bottom = 10.dp)
+    )
 }
 
 
 @Composable
 fun Keyboard(keyList: List<String>, inputtedText: MutableState<String>) {
 
-    val button0 = remember {
-        mutableStateOf(keyList[0])
-    }
-
-    val button1= remember {
-        mutableStateOf(keyList[1])
-    }
-
-    val button2 = remember {
-        mutableStateOf(keyList[2])
-    }
-
-    val button3 = remember {
-        mutableStateOf(keyList[3])
-    }
-
-    val button4 = remember {
-        mutableStateOf(keyList[4])
-    }
-
-    val button5 = remember {
-        mutableStateOf(keyList[5])
-    }
-
-    val button6 = remember {
-        mutableStateOf(keyList[6])
-    }
-
-    val button7 = remember {
-        mutableStateOf(keyList[7])
-    }
-
-    val button8 = remember {
-        mutableStateOf(keyList[8])
-    }
-
-    val button9 = remember {
-        mutableStateOf(keyList[9])
+    val buttonsSet = remember {
+        mutableStateListOf(
+            keyList[0],
+            keyList[1],
+            keyList[2],
+            keyList[3],
+            keyList[4],
+            keyList[5],
+            keyList[6],
+            keyList[7],
+            keyList[8],
+            keyList[9]
+        )
     }
 
     val buttonIndexCounter = remember { // счетчик нажатых клавиш
-        mutableStateOf("")
+        mutableStateListOf<Int>()
     }
 
 
     Column(
         modifier = Modifier
-            .padding(bottom = 30.dp)
             .background(Blue10)
             .fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Bottom
+
     ) {
 
-        Row(
+        Column(
             modifier = Modifier
-                .padding(top = 10.dp, bottom = 20.dp)
+                .weight(0.4F)
+                .padding(top = 10.dp, bottom = 10.dp)
                 .fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
 
             TextButton(
                 onClick = {
-                    if (inputtedText.value.isNotEmpty()){
-                        val lastIndex = buttonIndexCounter.value.takeLast(1).toInt()
-                        buttonIndexCounter.value = buttonIndexCounter.value.dropLast(1)
-
-                        when (lastIndex) {
-                            0 -> {
-                                inputtedText.value = inputtedText.value.replace(" ${keyList[0]}", "")
-                                button0.value = keyList[0]
-                            }
-                            1 -> {
-                                inputtedText.value = inputtedText.value.replace(" ${keyList[1]}", "")
-                                button1.value = keyList[1]
-                            }
-                            2 -> {
-                                inputtedText.value = inputtedText.value.replace(" ${keyList[2]}", "")
-                                button2.value = keyList[2]
-                            }
-                            3 -> {
-                                inputtedText.value = inputtedText.value.replace(" ${keyList[3]}", "")
-                                button3.value = keyList[3]
-                            }
-                            4 -> {
-                                inputtedText.value = inputtedText.value.replace(" ${keyList[4]}", "")
-                                button4.value = keyList[4]
-                            }
-                            5 -> {
-                                inputtedText.value = inputtedText.value.replace(" ${keyList[5]}", "")
-                                button5.value = keyList[5]
-                            }
-                            6 -> {
-                                inputtedText.value = inputtedText.value.replace(" ${keyList[6]}", "")
-                                button6.value = keyList[6]
-                            }
-                            7 -> {
-                                inputtedText.value = inputtedText.value.replace(" ${keyList[7]}", "")
-                                button7.value = keyList[7]
-                            }
-                            8 -> {
-                                inputtedText.value = inputtedText.value.replace(" ${keyList[8]}", "")
-                                button8.value = keyList[8]
-                            }
-                            9 -> {
-                                inputtedText.value = inputtedText.value.replace(" ${keyList[9]}", "")
-                                button9.value = keyList[9]
-                            }
-                        }
+                    if (buttonIndexCounter.isNotEmpty()){
+                        val lastIndex = buttonIndexCounter.removeLast()
+                        inputtedText.value = inputtedText.value.replace(" ${keyList[lastIndex]}", "")
+                        buttonsSet[lastIndex] = keyList[lastIndex]
                     }
                 },
                 modifier = Modifier
-                    .padding(10.dp)
+                  //  .padding(10.dp)
                     .background(Blue10),
                 colors = ButtonDefaults.textButtonColors(containerColor = Green50),
                 border = BorderStroke(2.dp, Color.White) // Blue30  Blue10  Color.White
@@ -387,154 +351,249 @@ fun Keyboard(keyList: List<String>, inputtedText: MutableState<String>) {
 
         Row(
             modifier = Modifier
-                .padding(10.dp)
+                .weight(0.15F)
+                .padding(1.dp)
                 .fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             Text(
                 modifier = Modifier
-                    .padding(10.dp)
-                    .clickable {
-                        inputtedText.value += " ${button0.value}"
-                        button0.value = ""
-                        buttonIndexCounter.value += "0"
-                    },
-                text = button0.value,
-                style = TextStyle(color = Color.White, fontSize = 20.sp)
+                    .padding(1.dp)
+                    .clickable(
+                        MutableInteractionSource(),
+                        indication = rememberRipple(
+                            bounded = false,
+                            radius = 40.dp,
+                            color = Blue15
+                        ),
+                        onClick = {
+                            if (buttonsSet[0].isNotEmpty()) {
+                                inputtedText.value += " ${buttonsSet[0]}"
+                                buttonsSet[0] = ""
+                                buttonIndexCounter.add(0)
+                            }
+                        }),
+                text = buttonsSet[0],
+                style = TextStyle(color = Color.White, fontSize = if (buttonsSet[0].length > 12) 12.sp else 20.sp)
             )
 
             Text(
                 modifier = Modifier
-                    .padding(10.dp)
-                    .clickable {
-                        inputtedText.value += " ${button1.value}"
-                        button1.value = ""
-                        buttonIndexCounter.value += "1"
-                    },
-                text =  button1.value,
-                style = TextStyle(color = Color.White, fontSize = 20.sp)
+                    .padding(1.dp)
+                    .clickable(
+                        MutableInteractionSource(),
+                        indication = rememberRipple(
+                            bounded = false,
+                            radius = 40.dp,
+                            color = Blue15
+                        ),
+                        onClick = {
+                            if (buttonsSet[1].isNotEmpty()) {
+                                inputtedText.value += " ${buttonsSet[1]}"
+                                buttonsSet[1] = ""
+                                buttonIndexCounter.add(1)
+                            }
+                        }),
+                text =  buttonsSet[1],
+                style = TextStyle(color = Color.White, fontSize = if (buttonsSet[1].length > 12) 12.sp else 20.sp)
             )
 
             Text(
                 modifier = Modifier
-                    .padding(10.dp)
-                    .clickable {
-                        inputtedText.value += " ${button2.value}"
-                        button2.value = ""
-                        buttonIndexCounter.value += "2"
-                    },
-                text =  button2.value,
-                style = TextStyle(color = Color.White, fontSize = 20.sp)
+                    .padding(1.dp)
+                    .clickable(
+                        MutableInteractionSource(),
+                        indication = rememberRipple(
+                            bounded = false,
+                            radius = 40.dp,
+                            color = Blue15
+                        ),
+                        onClick = {
+                            if (buttonsSet[2].isNotEmpty()) {
+                                inputtedText.value += " ${buttonsSet[2]}"
+                                buttonsSet[2] = ""
+                                buttonIndexCounter.add(2)
+                            }
+                        }),
+                text =  buttonsSet[2],
+                style = TextStyle(color = Color.White, fontSize = if (buttonsSet[2].length > 12) 12.sp else 20.sp)
             )
         }
 
         Row(
             modifier = Modifier
-                .padding(10.dp)
+                .weight(0.15F)
+                .padding(1.dp)
                 .fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
 
             Text(
                 modifier = Modifier
-                    .padding(10.dp)
-                    .clickable {
-                        inputtedText.value += " ${button3.value}"
-                        button3.value = ""
-                        buttonIndexCounter.value += "3"
-                    },
-                text =  button3.value,
-                style = TextStyle(color = Color.White, fontSize = 20.sp)
+                    .padding(1.dp)
+                    .clickable(
+                        MutableInteractionSource(),
+                        indication = rememberRipple(
+                            bounded = false,
+                            radius = 40.dp,
+                            color = Blue15
+                        ),
+                        onClick = {
+                            if (buttonsSet[3].isNotEmpty()) {
+                                inputtedText.value += " ${buttonsSet[3]}"
+                                buttonsSet[3] = ""
+                                buttonIndexCounter.add(3)
+                            }
+                        }),
+                text =  buttonsSet[3],
+                style = TextStyle(color = Color.White, fontSize = if (buttonsSet[3].length > 12) 12.sp else 20.sp)
             )
 
             Text(
                 modifier = Modifier
-                    .padding(10.dp)
-                    .clickable {
-                        inputtedText.value += " ${button4.value}"
-                        button4.value = ""
-                        buttonIndexCounter.value += "4"
-                    },
-                text =  button4.value,
-                style = TextStyle(color = Color.White, fontSize = 20.sp)
+                    .padding(1.dp)
+                    .clickable(
+                        MutableInteractionSource(),
+                        indication = rememberRipple(
+                            bounded = false,
+                            radius = 40.dp,
+                            color = Blue15
+                        ),
+                        onClick = {
+                            if (buttonsSet[4].isNotEmpty()) {
+                                inputtedText.value += " ${buttonsSet[4]}"
+                                buttonsSet[4] = ""
+                                buttonIndexCounter.add(4)
+                            }
+                        }),
+                text =  buttonsSet[4],
+                style = TextStyle(color = Color.White, fontSize = if (buttonsSet[4].length > 12) 12.sp else 20.sp)
             )
 
             Text(
                 modifier = Modifier
-                    .padding(10.dp)
-                    .clickable {
-                        inputtedText.value += " ${button5.value}"
-                        button5.value = ""
-                        buttonIndexCounter.value += "5"
-                    },
-                text =  button5.value,
-                style = TextStyle(color = Color.White, fontSize = 20.sp)
+                    .padding(1.dp)
+                    .clickable(
+                        MutableInteractionSource(),
+                        indication = rememberRipple(
+                            bounded = false,
+                            radius = 40.dp,
+                            color = Blue15
+                        ),
+                        onClick = {
+                            if (buttonsSet[5].isNotEmpty()) {
+                                inputtedText.value += " ${buttonsSet[5]}"
+                                buttonsSet[5] = ""
+                                buttonIndexCounter.add(5)
+                            }
+                        }),
+                text =  buttonsSet[5],
+                style = TextStyle(color = Color.White, fontSize = if (buttonsSet[5].length > 12) 12.sp else 20.sp)
             )
 
         }
 
         Row(
             modifier = Modifier
-                .padding(10.dp)
+                .weight(0.15F)
+                .padding(1.dp)
                 .fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
 
             Text(
                 modifier = Modifier
-                    .padding(10.dp)
-                    .clickable {
-                        inputtedText.value += " ${button6.value}"
-                        button6.value = ""
-                        buttonIndexCounter.value += "6"
-                    },
-                text =  button6.value,
-                style = TextStyle(color = Color.White, fontSize = 20.sp)
+                    .padding(1.dp)
+                    .clickable(
+                        MutableInteractionSource(),
+                        indication = rememberRipple(
+                            bounded = false,
+                            radius = 40.dp,
+                            color = Blue15
+                        ),
+                        onClick = {
+                            if (buttonsSet[6].isNotEmpty()) {
+                                inputtedText.value += " ${buttonsSet[6]}"
+                                buttonsSet[6] = ""
+                                buttonIndexCounter.add(6)
+                            }
+                        }),
+                text =  buttonsSet[6],
+                style = TextStyle(color = Color.White, fontSize = if (buttonsSet[6].length > 12) 12.sp else 20.sp)
             )
 
             Text(
                 modifier = Modifier
-                    .padding(10.dp)
-                    .clickable {
-                        inputtedText.value += " ${button7.value}"
-                        button7.value = ""
-                        buttonIndexCounter.value += "7"
-                    },
-                text =  button7.value,
-                style = TextStyle(color = Color.White, fontSize = 20.sp)
+                    .padding(1.dp)
+                    .clickable(
+                        MutableInteractionSource(),
+                        indication = rememberRipple(
+                            bounded = false,
+                            radius = 40.dp,
+                            color = Blue15
+                        ),
+                        onClick = {
+                            if (buttonsSet[7].isNotEmpty()) {
+                                inputtedText.value += " ${buttonsSet[7]}"
+                                buttonsSet[7] = ""
+                                buttonIndexCounter.add(7)
+                            }
+                        }),
+                text =  buttonsSet[7],
+                style = TextStyle(color = Color.White, fontSize = if (buttonsSet[7].length > 12) 12.sp else 20.sp)
             )
         }
 
         Row(
             modifier = Modifier
-                .padding(10.dp)
+                .weight(0.15F)
+                .padding(1.dp)
                 .fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             Text(
                 modifier = Modifier
-                    .padding(10.dp)
-                    .clickable {
-                        inputtedText.value += " ${button8.value}"
-                        button8.value = ""
-                        buttonIndexCounter.value += "8"
-                    },
-                text =  button8.value,
-                style = TextStyle(color = Color.White, fontSize = 20.sp)
+                    .padding(1.dp)
+                    .clickable(
+                        MutableInteractionSource(),
+                        indication = rememberRipple(
+                            bounded = false,
+                            radius = 40.dp,
+                            color = Blue15
+                        ),
+                        onClick = {
+                            if (buttonsSet[8].isNotEmpty()) {
+                                inputtedText.value += " ${buttonsSet[8]}"
+                                buttonsSet[8] = ""
+                                buttonIndexCounter.add(8)
+                            }
+                        }),
+                text =  buttonsSet[8],
+                style = TextStyle(color = Color.White, fontSize = if (buttonsSet[8].length > 12) 12.sp else 20.sp)
             )
 
             Text(
-                modifier = Modifier
-                    .padding(10.dp)
-                    .clickable {
-                        inputtedText.value += " ${button9.value}"
-                        button9.value = ""
-                        buttonIndexCounter.value += "9"
-                    },
-                text =  button9.value,
-                style = TextStyle(color = Color.White, fontSize = 20.sp)
+                modifier = Modifier   // .indication(InteractionSource(), Indication())          //.hoverable(MutableInteractionSource(), false)
+                    .padding(1.dp)
+                    .clickable(
+                        MutableInteractionSource(),
+                        indication = rememberRipple(
+                            bounded = false,
+                            radius = 40.dp,
+                            color = Blue15
+                        ),
+                        onClick = {
+                            if (buttonsSet[9].isNotEmpty()) {
+                                inputtedText.value += " ${buttonsSet[9]}"
+                                buttonsSet[9] = ""
+                                buttonIndexCounter.add(9)
+                            }
+                        }),
+                text =  buttonsSet[9],
+                style = TextStyle(color = Color.White, fontSize = if (buttonsSet[9].length > 12) 12.sp else 20.sp)
             )
         }
     }
 
 }
+

@@ -1,6 +1,6 @@
 package aldmitry.dev.learningenglish.view
 
-import aldmitry.dev.learningenglish.database.Database
+import aldmitry.dev.learningenglish.database.LessonDatabase
 import aldmitry.dev.learningenglish.database.UserLesson
 import aldmitry.dev.learningenglish.presenter.DbTextEditor
 import aldmitry.dev.learningenglish.ui.theme.Blue10
@@ -31,7 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun UserLessonPage(userLesson: UserLesson, database: Database, originIdText: MutableState<String>, englishText: MutableState<String>, russianText: MutableState<String>, flag: MutableState<Boolean>) {
+fun UserLessonPage(userLesson: UserLesson, database: LessonDatabase, originIdText: MutableState<String>, englishText: MutableState<String>, russianText: MutableState<String>, flag: MutableState<Boolean>) {
         Card( // String
             modifier = Modifier
                 .background(Blue10)

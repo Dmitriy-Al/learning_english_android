@@ -1,7 +1,6 @@
 package aldmitry.dev.learningenglish.presenter
 
 import aldmitry.dev.learningenglish.model.Learnable
-import aldmitry.dev.learningenglish.database.Database
 import aldmitry.dev.learningenglish.database.UserLesson
 
 class LearningHandler(val chooseLearningTypeSection: LearningTypeSection, val lesson: Learnable, val userLessons: MutableList<UserLesson>) {

@@ -20,6 +20,7 @@ val Green30 = Color(0xFF5DEC63) // 0xFF16C2A8
 val Blue30 = Color(0xFF099EB1) // 0xFF1DA3C4
 val Blue15 = Color(0xFF24698F) // 0xFF24698F
 val Blue10 = Color(0xFF003C5C) // 0xFF00486F
+val Blue5 = Color(0xFF01273C) // 0xFF00486F
 
 val Yellow30 = Color(0xFFFACE2E) // 0xFF00486F
 

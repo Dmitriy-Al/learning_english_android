@@ -1,5 +1,6 @@
 package aldmitry.dev.learningenglish.view
 
+import aldmitry.dev.learningenglish.ui.theme.Blue15
 import aldmitry.dev.learningenglish.ui.theme.Blue30
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -21,7 +22,7 @@ import androidx.compose.ui.unit.sp
 fun InfoView(text: String) { // onClick: () -> Unit
     Column(
         modifier = Modifier
-            .background(Blue30)
+            .background(Blue15)
             .fillMaxSize()
             .padding(20.dp),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -29,9 +30,9 @@ fun InfoView(text: String) { // onClick: () -> Unit
 
         Box(
             modifier = Modifier
-                .background(Blue30)
+                .background(Blue15)
                 .fillMaxSize()
-                .border(3.dp, Color.White)
+                .border(3.dp, Blue15)
         ) {
             Text(
                 modifier = Modifier.padding(15.dp),

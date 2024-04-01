@@ -18,6 +18,9 @@ interface Dao {
 
 
     @Query("SELECT * FROM lessons_table")
-    fun receiveLessonByTitle(): List<UserLesson>
+    fun receiveLessons(): List<UserLesson>
+
+
+
 
 }
