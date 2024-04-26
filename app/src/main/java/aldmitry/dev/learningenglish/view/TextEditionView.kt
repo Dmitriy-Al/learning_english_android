@@ -2,7 +2,7 @@ package aldmitry.dev.learningenglish.view
 
 import aldmitry.dev.learningenglish.database.LessonDatabase
 import aldmitry.dev.learningenglish.database.UserLesson
-import aldmitry.dev.learningenglish.presenter.DbTextEditor
+import aldmitry.dev.learningenglish.presenter.LessonsRepository
 import aldmitry.dev.learningenglish.ui.theme.Blue10
 import aldmitry.dev.learningenglish.ui.theme.Blue15
 import aldmitry.dev.learningenglish.ui.theme.Blue30
@@ -21,6 +21,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
@@ -28,6 +30,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -36,14 +39,19 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 
 @SuppressLint("SuspiciousIndentation")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TextEditionView(lessonTitle: String, database: LessonDatabase) { //
+fun TextEditionView(lessonTitle: String, repository: LessonsRepository) {
 
-    val flagOfDelete = remember {
-        mutableStateOf(false)
+
+    val changeKey = remember {
+        mutableStateOf(1)
     }
 
     val originIdText = remember {
@@ -59,8 +67,9 @@ fun TextEditionView(lessonTitle: String, database: LessonDatabase) { //
     }
 
     val lessonList = remember {
-        mutableStateOf<List<UserLesson>>(listOf())
+        mutableStateOf<MutableList<UserLesson>>(mutableListOf())
     }
+
 
     val isValidText = englishText.value.length < 70 && !englishText.value.contains("  ") &&
             englishText.value.split(" ").size <= 10 &&
@@ -83,14 +92,14 @@ fun TextEditionView(lessonTitle: String, database: LessonDatabase) { //
                 .background(Blue10) // цвет фона между рядами клавиш
                 .padding(bottom = 10.dp)
         ) {
-            itemsIndexed(lessonList.value) { _, lesson ->
+            itemsIndexed(lessonList.value.filter { it.lessonTitle == lessonTitle }) { _, lesson -> // TODO it.lessonTitle == lessonTitle
                 UserLessonPage(
                     lesson,
-                    database,
+                    repository,
                     originIdText,
                     englishText,
                     russianText,
-                    flagOfDelete
+                    changeKey
                 )
             }
         }
@@ -99,27 +108,30 @@ fun TextEditionView(lessonTitle: String, database: LessonDatabase) { //
             modifier = Modifier
                 .background(Blue15)
                 .weight(0.5F)
-                .fillMaxSize(),
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState()), // TODO
             verticalArrangement = Arrangement.Bottom, // verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
             TextButton(
                 onClick = {
-                    if (isTextNotEmpty && isValidText) {
-                    val handler = DbTextEditor(lessonTitle, database)
-                        englishText.value = englishText.value.trim()
-                        russianText.value = russianText.value.trim()
+                    CoroutineScope(Job() + Dispatchers.IO).launch {
+                        if (isTextNotEmpty && isValidText) {
+                            englishText.value = englishText.value.trim()
+                            russianText.value = russianText.value.trim()
 
-                    if (originIdText.value == englishText.value) {
-                        handler.addLesson(englishText.value, russianText.value)
-                    } else {
-                        handler.deleteLesson(originIdText.value, russianText.value)
-                        handler.addLesson(englishText.value, russianText.value)
-                    }
-                    originIdText.value = ""
-                    englishText.value = ""
-                    russianText.value = ""
+                            if (originIdText.value == englishText.value) {
+                                repository.addLesson(englishText.value, russianText.value, lessonTitle) // TODO update
+                            } else {
+                                repository.deleteLesson(originIdText.value, russianText.value, lessonTitle) // TODO update
+                                repository.addLesson(englishText.value, russianText.value, lessonTitle) // TODO update
+                            }
+                        }
+                        originIdText.value = ""
+                        englishText.value = ""
+                        russianText.value = ""
+                        changeKey.value++
                     }
                 },
                 modifier = Modifier
@@ -200,8 +212,10 @@ fun TextEditionView(lessonTitle: String, database: LessonDatabase) { //
         }
     }
 
-    Thread { lessonList.value = database.lessonsDao().receiveLessons()
-        .filter { it.lessonTitle == lessonTitle }.sortedBy { it.russianText } }.start()
-    flagOfDelete.value = !flagOfDelete.value
+    LaunchedEffect(changeKey.value) {
+        CoroutineScope(Job() + Dispatchers.IO).launch {
+            repository.receiveLessons(lessonList)
+        }
+    }
 
 }

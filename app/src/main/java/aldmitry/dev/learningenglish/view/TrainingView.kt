@@ -1,6 +1,8 @@
 package aldmitry.dev.learningenglish.view
 
+import aldmitry.dev.learningenglish.presenter.LearningProcessor
 import aldmitry.dev.learningenglish.presenter.LessonUnit
+import aldmitry.dev.learningenglish.presenter.LessonsRepository
 import aldmitry.dev.learningenglish.ui.theme.Blue10
 import aldmitry.dev.learningenglish.ui.theme.Blue15
 import aldmitry.dev.learningenglish.ui.theme.Green30
@@ -28,10 +30,12 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -39,6 +43,11 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.time.LocalTime
 
 
@@ -49,9 +58,8 @@ const val keyboard_field = "KEYBOARD_FIELD"
 const val rightAnswer_text = "Правильно!"
 const val wrongAnswer_text = "Неправильно"
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun TrainingScreen(lessonUnits : List<LessonUnit>) {
+fun TrainingView(lessonUnits : List<LessonUnit>) {
 
     val lessonUnit = remember { // урок
         mutableStateOf(lessonUnits[(lessonUnits.indices).random()])
@@ -85,65 +93,22 @@ fun TrainingScreen(lessonUnits : List<LessonUnit>) {
         mutableStateOf(0)
     }
 
-    val previewLessonText = remember { // урок
-        mutableStateOf(lessonUnit.value.englishText)
-    }
 
-
-    when {
-        lessonUnit.value.keyButtonsWords.isEmpty() && inputtedText.value.isNotEmpty() && !isAnswer.value || inputtedText.value.isNotEmpty() &&
-                lessonUnit.value.englishText.split(" ").size == inputtedText.value.trim().split(" ").size -> {
-
-            if (inputtedText.value.trim().equals(lessonUnit.value.englishText, ignoreCase = true)) {
-                answerCounter.value ++
-                topScreenText.value = rightAnswer_text // return
-                midScreenText.value = "✔ ${lessonUnit.value.englishText}" // оригинальный eng текст на экране
-                inputtedText.value = ""
-                var newLessonUnit = lessonUnits[(lessonUnits.indices).random()]
-
-                for (i in 0 .. 10) { // цикл конечен для того случая, когда englishText == ruText и урок инвертирован
-                    if (lessonUnits.size < 2 && newLessonUnit.englishText != previewLessonText.value) {
-                        return
-                    } else {
-                        newLessonUnit = lessonUnits[(lessonUnits.indices).random()]
-                    }
-                }
-
-                lessonUnit.value = newLessonUnit
-                previewLessonText.value = newLessonUnit.englishText
-            }  else {
-                topScreenText.value = wrongAnswer_text // оригинальный eng текст на экране
-                midScreenText.value = "✔ ${lessonUnit.value.englishText}" // оригинальный eng текст на экране
-                wrongAnswerText.value = "✘ ${inputtedText.value}" // user eng текст на экране
-                inputtedText.value = ""
-            }
-            isAnswer.value = true
-            keyBoardField.value = answer_field
-        }
-
-        keyBoardField.value == keyboard_field || keyBoardField.value == input_field -> {
-            topScreenText.value = "Введите перевод для текста:"
-            midScreenText.value = lessonUnit.value.russianText
-        }
-
-        // если введенный текст отсутствует и поле ввода показывает ответ, запускается таймер показа экрана
-        //lowScreenText.value.isEmpty() && keyBoardField.value == answer_field -> {
-        isAnswer.value && keyBoardField.value == answer_field -> {
-            if (lessonUnit.value.keyButtonsWords.isEmpty()) {
-                keyBoardField.value = input_field
-            } else {
-                keyBoardField.value = keyboard_field
-            }
-
-            val timeUp = LocalTime.now().plusSeconds(2) // TODO задержка показа ответа
-            while (!timeUp.isBefore(LocalTime.now())) // таймер показа экрана
-            inputtedText.value = ""
-            topScreenText.value = "" // Текст для перевода на экране
-            midScreenText.value = ""
-            wrongAnswerText.value = ""
-                isAnswer.value = false
+    LaunchedEffect(inputtedText.value, topScreenText.value) {
+        CoroutineScope(Dispatchers.IO).launch {
+            LearningProcessor(
+                lessonUnit,
+                keyBoardField,
+                isAnswer,
+                answerCounter,
+                topScreenText,
+                midScreenText,
+                inputtedText,
+                wrongAnswerText,
+                lessonUnits).process()
         }
     }
+
 
     Column(
         modifier = Modifier
@@ -199,12 +164,11 @@ fun TrainingScreen(lessonUnits : List<LessonUnit>) {
             )
         }
 
-            Text(
-                modifier = Modifier.padding(bottom = 30.dp),
-                text = inputtedText.value,
-                style = TextStyle(color = Color.White, fontSize = 23.sp)
-            )
-
+        Text(
+            modifier = Modifier.padding(bottom = 30.dp),
+            text = inputtedText.value,
+            style = TextStyle(color = Color.White, fontSize = 23.sp)
+        )
 
         Column(
             modifier = Modifier
@@ -226,7 +190,7 @@ fun TrainingScreen(lessonUnits : List<LessonUnit>) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun InputLesson(inputtedText: MutableState<String>) { // keyList: List<String>, inputtedText: MutableState<String>
+fun InputLesson(inputtedText: MutableState<String>) {
 
     val textFromField = remember {
         mutableStateOf("")
@@ -247,10 +211,10 @@ fun InputLesson(inputtedText: MutableState<String>) { // keyList: List<String>, 
                 if (isTextValid) inputtedText.value = textFromField.value
             },
             modifier = Modifier
-                .padding(bottom = 10.dp, top = 30.dp) // .padding(bottom = 20.dp, top = 30.dp)
+                .padding(bottom = 10.dp, top = 30.dp)
                 .background(Blue10),
             colors = ButtonDefaults.textButtonColors(containerColor = if (textFromField.value.isEmpty() || !isTextValid) Blue10 else Green50),
-            border = BorderStroke(2.dp, Color.White) // Blue30  Blue10  Color.White
+            border = BorderStroke(2.dp, Color.White)
         ) {
             Text(
                 modifier = Modifier.padding(10.dp),
@@ -307,7 +271,6 @@ fun Keyboard(keyList: List<String>, inputtedText: MutableState<String>) {
         mutableStateListOf<Int>()
     }
 
-
     Column(
         modifier = Modifier
             .background(Blue10)
@@ -335,7 +298,7 @@ fun Keyboard(keyList: List<String>, inputtedText: MutableState<String>) {
                     }
                 },
                 modifier = Modifier
-                  //  .padding(10.dp)
+                    //  .padding(10.dp)
                     .background(Blue10),
                 colors = ButtonDefaults.textButtonColors(containerColor = Green50),
                 border = BorderStroke(2.dp, Color.White) // Blue30  Blue10  Color.White
@@ -596,4 +559,3 @@ fun Keyboard(keyList: List<String>, inputtedText: MutableState<String>) {
     }
 
 }
-

@@ -39,6 +39,7 @@ class LessonCreator {
                 keyButtonsWords.add(randomWord)
             }
             keyButtonsWords.sortWith { a, b -> a.length - b.length }
+
             lessonUnitList.add(LessonUnit(ruText, enText, keyButtonsWords))
         }
         return lessonUnitList
@@ -69,10 +70,8 @@ class LessonCreator {
         }
 
         for ((ruText, enText) in trainingTexts) {
-            when((1..2).random()){
-                1 -> lessonUnitList.add(LessonUnit(ruText, enText, mutableListOf()))
-                2 -> lessonUnitList.add(LessonUnit(enText, ruText, mutableListOf()))
-            }
+            lessonUnitList.add(LessonUnit(ruText, enText, mutableListOf()))
+            lessonUnitList.add(LessonUnit(enText, ruText, mutableListOf()))
         }
         return lessonUnitList
     }

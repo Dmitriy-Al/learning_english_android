@@ -18,9 +18,10 @@ interface Dao {
 
 
     @Query("SELECT * FROM lessons_table")
-    fun receiveLessons(): List<UserLesson>
+    fun receiveLessons(): MutableList<UserLesson>
 
 
-
+    @Query("SELECT * FROM lessons_table WHERE lessonTitle = :lessonTitle")
+    fun receiveLessonsByTitle(lessonTitle: String): List<UserLesson>
 
 }

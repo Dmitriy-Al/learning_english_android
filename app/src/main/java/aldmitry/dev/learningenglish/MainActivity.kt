@@ -1,7 +1,6 @@
 package aldmitry.dev.learningenglish
 
 import aldmitry.dev.learningenglish.model.Learnable
-import aldmitry.dev.learningenglish.database.LessonDatabase
 import aldmitry.dev.learningenglish.database.UserLesson
 import aldmitry.dev.learningenglish.model.lessons.Compares
 import aldmitry.dev.learningenglish.model.lessons.DateAndTime
@@ -14,6 +13,8 @@ import aldmitry.dev.learningenglish.model.lessons.VariousTexts
 import aldmitry.dev.learningenglish.model.lessons.WordsForLearning
 import aldmitry.dev.learningenglish.presenter.LearningHandler
 import aldmitry.dev.learningenglish.presenter.LearningTypeSection
+import aldmitry.dev.learningenglish.presenter.LessonUnit
+import aldmitry.dev.learningenglish.presenter.LessonsRepository
 import aldmitry.dev.learningenglish.ui.theme.Blue10
 import aldmitry.dev.learningenglish.ui.theme.Blue15
 import aldmitry.dev.learningenglish.ui.theme.Blue30
@@ -21,7 +22,7 @@ import aldmitry.dev.learningenglish.view.InfoView
 import aldmitry.dev.learningenglish.view.LessonPage
 import aldmitry.dev.learningenglish.view.SettingsScreen
 import aldmitry.dev.learningenglish.view.TextEditionView
-import aldmitry.dev.learningenglish.view.TrainingScreen
+import aldmitry.dev.learningenglish.view.TrainingView
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -41,6 +42,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -54,27 +56,21 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.room.Room
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 
 class MainActivity : ComponentActivity() {
 
-
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
+        DbInitializer.init(applicationContext)
+        val repository = DbInitializer.lessonsRepository
 
-     val database = LessonDatabase.createDb(this)
+        super.onCreate(savedInstanceState);
 
-        /*
-    val database = Room.databaseBuilder(
-        applicationContext,
-        LessonDatabase::class.java,
-        "lessons_db"
-    ).build()
-*/
-
-        super.onCreate(savedInstanceState)
         setContent {
 
             val chooseLearningTypeSection = remember {
@@ -90,14 +86,24 @@ class MainActivity : ComponentActivity() {
             }
 
             val userLessons = remember {
-                mutableStateOf(receiveUserLessons(database))
+                mutableStateOf<MutableList<UserLesson>>(mutableListOf()) // TODO S
+            }
+
+            val onUserLessonsChange = remember {
+                mutableStateOf(0)
+            }
+
+            LaunchedEffect(onUserLessonsChange) {
+                CoroutineScope(Job() + Dispatchers.Default).launch {
+                    receiveUserLessons(repository, userLessons)
+                }
             }
 
             val navController = rememberNavController();
 
             NavHost(navController = navController, startDestination =  mainScreen_view) {
                 composable( mainScreen_view) { // composable - добавляет компонуемый объект в NavGraphBuilder
-                    userLessons.value = receiveUserLessons(database)
+                    // onUserLessonsChange.value++
                     Screen(
                         { navController.navigate(controllerText.value) },
                         controllerText,
@@ -107,7 +113,7 @@ class MainActivity : ComponentActivity() {
                 }
 
                 composable(addTextScreen_view) { // Экран добавления текста
-                   TextEditionView(lesson.value.receiveTitle(), database)//
+                    TextEditionView(lesson.value.receiveTitle(), repository)
                 }
 
                 composable(info_view) { // Экран инфо
@@ -119,8 +125,10 @@ class MainActivity : ComponentActivity() {
                 }
 
                 composable(training_view) { // Экран тренировок
-                    val learningHandler = LearningHandler(chooseLearningTypeSection.value, lesson.value, userLessons.value);
-                    if (learningHandler.receiveLessonTextCollector().isEmpty()) InfoView("\n\n\n\n\n\nУ вас ещё нет добавленных слов в этой категории!") else TrainingScreen(learningHandler.receiveLessonTextCollector())
+                   val learningHandler = LearningHandler(chooseLearningTypeSection.value, lesson.value, userLessons.value);
+                   val lessonUnits: List<LessonUnit> = learningHandler.receiveLessonTextCollector()
+
+                    if (lessonUnits.isEmpty()) InfoView("\n\n\n\n\n\nУ вас ещё нет добавленных слов в этой категории!") else TrainingView(lessonUnits)  // TrainingScreenTest(lessonUnits) TrainingScreen(learningHandler.receiveLessonTextCollector())
                 }
             }
         }
@@ -132,10 +140,12 @@ class MainActivity : ComponentActivity() {
 
 
 @Composable
-fun Screen(buttonClick: () -> Unit, controllerText: MutableState<String>, chooseLesson: MutableState<Learnable>, chooseLearningTypeSection: MutableState<LearningTypeSection>) {
+fun Screen(buttonClick: () -> Unit, controllerText: MutableState<String>,
+           chooseLesson: MutableState<Learnable>,
+           chooseLearningTypeSection: MutableState<LearningTypeSection>) {
 
-    val lessonCategories = listOf(PresentContinuous(), PresentSimple(), PassiveVoice(),DateAndTime(),
-        PerfectTense(), MuchMany(), Compares(), VariousTexts(), WordsForLearning())
+    val lessonCategories = listOf(PresentContinuous(), PresentSimple(), PassiveVoice(),
+        DateAndTime(), PerfectTense(), MuchMany(), Compares(), VariousTexts(), WordsForLearning())
 
     Column(
         modifier = Modifier
@@ -247,12 +257,10 @@ fun Screen(buttonClick: () -> Unit, controllerText: MutableState<String>, choose
 }
 
 
-fun receiveUserLessons(database: LessonDatabase): MutableList<UserLesson> {
-    val userLessons = mutableListOf<UserLesson>()
-    Thread {
-        userLessons.addAll(database.lessonsDao().receiveLessons())
-    }.start()
-    return userLessons
+suspend fun receiveUserLessons(repository: LessonsRepository, userLessons: MutableState<MutableList<UserLesson>>) {
+    withContext(Dispatchers.IO) {
+        repository.receiveLessons(userLessons)
+    }
 }
 
 
