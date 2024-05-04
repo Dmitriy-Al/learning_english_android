@@ -89,11 +89,9 @@ class MainActivity : ComponentActivity() {
                 mutableStateOf<MutableList<UserLesson>>(mutableListOf()) // TODO S
             }
 
-            val onUserLessonsChange = remember {
-                mutableStateOf(0)
-            }
+            //  val onUserLessonsChange = remember {mutableStateOf(0)}
 
-            LaunchedEffect(onUserLessonsChange) {
+            LaunchedEffect(controllerText.value) {//  onUserLessonsChange.value  chooseLearningTypeSection.value
                 CoroutineScope(Job() + Dispatchers.Default).launch {
                     receiveUserLessons(repository, userLessons)
                 }
@@ -103,7 +101,7 @@ class MainActivity : ComponentActivity() {
 
             NavHost(navController = navController, startDestination =  mainScreen_view) {
                 composable( mainScreen_view) { // composable - добавляет компонуемый объект в NavGraphBuilder
-                    // onUserLessonsChange.value++
+                    //  onUserLessonsChange.value++
                     Screen(
                         { navController.navigate(controllerText.value) },
                         controllerText,
@@ -125,18 +123,14 @@ class MainActivity : ComponentActivity() {
                 }
 
                 composable(training_view) { // Экран тренировок
-                   val learningHandler = LearningHandler(chooseLearningTypeSection.value, lesson.value, userLessons.value);
-                   val lessonUnits: List<LessonUnit> = learningHandler.receiveLessonTextCollector()
-
+                    val learningHandler = LearningHandler(chooseLearningTypeSection.value, lesson.value, userLessons.value);
+                    val lessonUnits: List<LessonUnit> = learningHandler.receiveLessonTextCollector()
                     if (lessonUnits.isEmpty()) InfoView("\n\n\n\n\n\nУ вас ещё нет добавленных слов в этой категории!") else TrainingView(lessonUnits)  // TrainingScreenTest(lessonUnits) TrainingScreen(learningHandler.receiveLessonTextCollector())
                 }
             }
         }
     }
 }
-
-
-
 
 
 @Composable
@@ -238,7 +232,6 @@ fun Screen(buttonClick: () -> Unit, controllerText: MutableState<String>,
                     style = TextStyle(color = Color.White, fontSize = 18.sp)
                 )
             }
-
         }
 
         LazyColumn(
@@ -251,7 +244,6 @@ fun Screen(buttonClick: () -> Unit, controllerText: MutableState<String>,
                 _, lesson -> LessonPage(buttonClick, controllerText, chooseLesson, lesson)
 
             }
-
         }
     }
 }

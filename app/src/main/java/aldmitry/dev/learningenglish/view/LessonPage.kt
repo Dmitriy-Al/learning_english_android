@@ -35,7 +35,7 @@ fun LessonPage(buttonClick: () -> Unit, controllerText: MutableState<String>, ch
     Card(
         elevation = 5.dp,
         modifier = Modifier
-            .height(70.dp)
+            .height(80.dp)
             .fillMaxWidth()
             .padding(top = 10.dp, start = 10.dp, end = 10.dp)
             .clickable {
@@ -48,8 +48,9 @@ fun LessonPage(buttonClick: () -> Unit, controllerText: MutableState<String>, ch
         border = BorderStroke(1.dp, Color.White)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center,
+            modifier = Modifier
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
@@ -57,13 +58,14 @@ fun LessonPage(buttonClick: () -> Unit, controllerText: MutableState<String>, ch
                 color = Color.White,
                 fontSize = 20.sp,
                 modifier = Modifier
-                    .weight(1F)
+                    //.weight(1F)
                     .padding(10.dp)
             )
 
             TextButton(
                 colors = ButtonDefaults.textButtonColors(contentColor = Yellow30),
                 modifier = Modifier
+                    .height(75.dp)
                     .padding(3.dp)
                     .background(Yellow30, RoundedCornerShape(10.dp)),
                 border = BorderStroke(1.dp, Color.White),
@@ -84,8 +86,6 @@ fun LessonPage(buttonClick: () -> Unit, controllerText: MutableState<String>, ch
         }
     }
 }
-
-////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 @Preview(showBackground = true)

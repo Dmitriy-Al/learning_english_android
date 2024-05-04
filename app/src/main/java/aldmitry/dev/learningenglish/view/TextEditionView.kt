@@ -1,6 +1,5 @@
 package aldmitry.dev.learningenglish.view
 
-import aldmitry.dev.learningenglish.database.LessonDatabase
 import aldmitry.dev.learningenglish.database.UserLesson
 import aldmitry.dev.learningenglish.presenter.LessonsRepository
 import aldmitry.dev.learningenglish.ui.theme.Blue10
@@ -14,15 +13,12 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
@@ -80,74 +76,20 @@ fun TextEditionView(lessonTitle: String, repository: LessonsRepository) {
 
         Column(
         modifier = Modifier
-            .background(Blue15)
+            .background(Blue10)
             .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Bottom
+        verticalArrangement = Arrangement.SpaceBetween
     ) {
-        LazyColumn(
-            modifier = Modifier
-                .weight(0.5F)
-                .fillMaxWidth()
-                .background(Blue10) // цвет фона между рядами клавиш
-                .padding(bottom = 10.dp)
-        ) {
-            itemsIndexed(lessonList.value.filter { it.lessonTitle == lessonTitle }) { _, lesson -> // TODO it.lessonTitle == lessonTitle
-                UserLessonPage(
-                    lesson,
-                    repository,
-                    originIdText,
-                    englishText,
-                    russianText,
-                    changeKey
-                )
-            }
-        }
 
         Column(
             modifier = Modifier
-                .background(Blue15)
-                .weight(0.5F)
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState()), // TODO
-            verticalArrangement = Arrangement.Bottom, // verticalArrangement = Arrangement.Top,
+                .fillMaxWidth(),
+            verticalArrangement = Arrangement.Top, // verticalArrangement = Arrangement.Bottom  Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            TextButton(
-                onClick = {
-                    CoroutineScope(Job() + Dispatchers.IO).launch {
-                        if (isTextNotEmpty && isValidText) {
-                            englishText.value = englishText.value.trim()
-                            russianText.value = russianText.value.trim()
-
-                            if (originIdText.value == englishText.value) {
-                                repository.addLesson(englishText.value, russianText.value, lessonTitle) // TODO update
-                            } else {
-                                repository.deleteLesson(originIdText.value, russianText.value, lessonTitle) // TODO update
-                                repository.addLesson(englishText.value, russianText.value, lessonTitle) // TODO update
-                            }
-                        }
-                        originIdText.value = ""
-                        englishText.value = ""
-                        russianText.value = ""
-                        changeKey.value++
-                    }
-                },
-                modifier = Modifier
-                    .padding(bottom = 20.dp, top = 20.dp)
-                    .background(Blue15),
-                colors = ButtonDefaults.textButtonColors(containerColor = if (isTextNotEmpty && isValidText) Blue30 else Blue10),
-                border = BorderStroke(1.dp, Color.White)
-            ) {
-                Text(
-                    modifier = Modifier.padding(5.dp),
-                    text = if (originIdText.value.isEmpty()) "Добавить текст" else "Редактировать",
-                    style = TextStyle(color = Color.White, fontSize = 18.sp)
-                )
-            }
-
-            TextField( // TODO поведение клавиатуры
+            TextField(
                 placeholder = {
                     Text(
                         text = "✎ Введите текст на русском языке",
@@ -181,35 +123,71 @@ fun TextEditionView(lessonTitle: String, repository: LessonsRepository) {
                     .background(Blue10)
                     .border(10.dp, Blue10)
                     .fillMaxWidth()
-                    .padding(top = 15.dp)
-                    .weight(0.3F),
+                    .padding(top = 15.dp),
                 textStyle = TextStyle(fontSize = 18.sp, color = if (isValidText)Color.White else Red30),
                 colors = TextFieldDefaults.outlinedTextFieldColors(Blue10)
             )
 
-            Column(
+            TextButton(
+                onClick = {
+                    CoroutineScope(Job() + Dispatchers.IO).launch {
+                        if (isTextNotEmpty && isValidText) {
+                            englishText.value = englishText.value.trim()
+                            russianText.value = russianText.value.trim()
+
+                            if (originIdText.value == englishText.value) {
+                                repository.addLesson(englishText.value, russianText.value, lessonTitle) // TODO update
+                            } else {
+                                repository.deleteLesson(originIdText.value, russianText.value, lessonTitle) // TODO update
+                                repository.addLesson(englishText.value, russianText.value, lessonTitle) // TODO update
+                            }
+                        }
+                        originIdText.value = ""
+                        englishText.value = ""
+                        russianText.value = ""
+                        changeKey.value++
+                    }
+                },
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .padding(bottom = 20.dp, top = 20.dp)
                     .background(Blue10),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Top
+                colors = ButtonDefaults.textButtonColors(containerColor = if (isTextNotEmpty && isValidText) Blue30 else Blue10),
+                border = BorderStroke(1.dp, Color.White)
             ) {
                 Text(
-                    modifier = Modifier
-                        .background(Blue10)
-                        .padding(10.dp),
-                    text = "$lessonTitle, текстов добавлено: ${lessonList.value.size}",
-                    style = TextStyle(color = Yellow30, fontSize = 14.sp),
+                    modifier = Modifier.padding(5.dp),
+                    text = if (originIdText.value.isEmpty()) "Добавить текст" else "Редактировать",
+                    style = TextStyle(color = Color.White, fontSize = 18.sp)
                 )
             }
 
-            Spacer(
+            Text(
                 modifier = Modifier
-                    .width(10.dp)
-                    .background(Blue15)
-                    .weight(0.1F)
+                    .background(Blue10)
+                    .padding(10.dp),
+                text = "$lessonTitle, текстов добавлено: ${lessonList.value.size}",
+                style = TextStyle(color = Yellow30, fontSize = 14.sp),
             )
         }
+
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Blue10) // цвет фона между рядами клавиш
+                    .padding(bottom = 10.dp)
+            ) {
+                itemsIndexed(lessonList.value.filter { it.lessonTitle == lessonTitle }) { _, lesson -> // TODO it.lessonTitle == lessonTitle
+                    UserLessonPage(
+                        lesson,
+                        repository,
+                        originIdText,
+                        englishText,
+                        russianText,
+                        changeKey
+                    )
+                }
+            }
+
     }
 
     LaunchedEffect(changeKey.value) {

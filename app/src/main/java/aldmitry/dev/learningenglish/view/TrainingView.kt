@@ -2,14 +2,11 @@ package aldmitry.dev.learningenglish.view
 
 import aldmitry.dev.learningenglish.presenter.LearningProcessor
 import aldmitry.dev.learningenglish.presenter.LessonUnit
-import aldmitry.dev.learningenglish.presenter.LessonsRepository
 import aldmitry.dev.learningenglish.ui.theme.Blue10
 import aldmitry.dev.learningenglish.ui.theme.Blue15
 import aldmitry.dev.learningenglish.ui.theme.Green30
 import aldmitry.dev.learningenglish.ui.theme.Green50
 import aldmitry.dev.learningenglish.ui.theme.Red30
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -22,6 +19,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -35,7 +34,6 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -45,21 +43,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.time.LocalTime
 
 
 const val answer_field = "ANSWER"
 const val input_field = "INPUT_FIELD"
 const val keyboard_field = "KEYBOARD_FIELD"
+const val topText_field = "Переведите текст:\n"
 
-const val rightAnswer_text = "Правильно!"
-const val wrongAnswer_text = "Неправильно"
 
 @Composable
-fun TrainingView(lessonUnits : List<LessonUnit>) {
+fun TrainingView(lessonUnits: List<LessonUnit>) {
 
     val lessonUnit = remember { // урок
         mutableStateOf(lessonUnits[(lessonUnits.indices).random()])
@@ -77,15 +71,7 @@ fun TrainingView(lessonUnits : List<LessonUnit>) {
         mutableStateOf("")
     }
 
-    val midScreenText = remember { // второй текст сообщения главного экрана
-        mutableStateOf("")
-    }
-
-    val inputtedText = remember { // введеный с клавиатуры текст
-        mutableStateOf("")
-    }
-
-    val wrongAnswerText = remember { // введеный с клавиатуры текст
+    val bottomScreenText = remember { // второй текст сообщения главного экрана
         mutableStateOf("")
     }
 
@@ -94,7 +80,7 @@ fun TrainingView(lessonUnits : List<LessonUnit>) {
     }
 
 
-    LaunchedEffect(inputtedText.value, topScreenText.value) {
+    LaunchedEffect(topScreenText.value, bottomScreenText.value) {
         CoroutineScope(Dispatchers.IO).launch {
             LearningProcessor(
                 lessonUnit,
@@ -102,10 +88,9 @@ fun TrainingView(lessonUnits : List<LessonUnit>) {
                 isAnswer,
                 answerCounter,
                 topScreenText,
-                midScreenText,
-                inputtedText,
-                wrongAnswerText,
-                lessonUnits).process()
+                bottomScreenText,
+                lessonUnits
+            ).process()
         }
     }
 
@@ -115,21 +100,15 @@ fun TrainingView(lessonUnits : List<LessonUnit>) {
             .background(Blue15)
             .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.SpaceBetween
     ) {
-
-        Spacer(modifier = Modifier
-            .weight(0.10F)
-            .padding(bottom = 30.dp)
-            .background(Blue15)
-            .fillMaxWidth()
-        )
 
         Row(
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(
                 modifier = Modifier
-                    .padding(top = 5.dp, bottom = 10.dp, start = 20.dp),
+                    .padding(top = 20.dp, bottom = 5.dp, start = 20.dp),
                 text = "Ответов: ${answerCounter.value}", // "Введите перевод текста:
                 style = TextStyle(color = Color.White, fontSize = 18.sp),
                 textAlign = TextAlign.Start
@@ -138,59 +117,61 @@ fun TrainingView(lessonUnits : List<LessonUnit>) {
 
         Column(
             modifier = Modifier
-                .weight(0.4F)
-                .background(Blue15)
-                .fillMaxWidth()
-                .padding(bottom = 20.dp, top = 10.dp, start = 10.dp),
+                //.background(Blue15)
+                .fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Bottom
+            verticalArrangement = Arrangement.Center
         ) {
-            Text(
-                modifier = Modifier.padding(bottom = 10.dp),
-                text = topScreenText.value, // "Введите перевод текста:
-                style = TextStyle(color = Color.White, fontSize = if (isAnswer.value) 25.sp else 21.sp)
-            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 5.dp, bottom = 10.dp, start = 30.dp, end = 30.dp),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = topScreenText.value,
+                    style = TextStyle(
+                        color = if (isAnswer.value) Green30 else Color.White,
+                        fontSize = 23.sp
+                    )
+                )
+            }
 
-            Text(
-                modifier = Modifier.padding(10.dp),
-                text = midScreenText.value,
-                style = TextStyle(color = if (isAnswer.value) Green30 else Color.White, fontSize = 23.sp)
-            )
-
-            Text(
-                modifier = Modifier.padding(top = 10.dp, start = 10.dp, end = 10.dp),
-                text = wrongAnswerText.value,
-                style = TextStyle(color = if (isAnswer.value) Red30 else Color.White, fontSize = 23.sp)
-            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 5.dp, bottom = 5.dp, start = 30.dp, end = 30.dp),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = bottomScreenText.value,
+                    style = TextStyle(
+                        color = if (isAnswer.value) Red30 else Color.White,
+                        fontSize = 23.sp
+                    )
+                )
+            }
         }
-
-        Text(
-            modifier = Modifier.padding(bottom = 30.dp),
-            text = inputtedText.value,
-            style = TextStyle(color = Color.White, fontSize = 23.sp)
-        )
 
         Column(
             modifier = Modifier
-                .weight(0.5F)
-                .padding(bottom = 20.dp)
-                .background(Blue15)
+                .padding(top = 20.dp, bottom = 20.dp)
+                //.background(Blue15)
                 .fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Bottom,
+            verticalArrangement = Arrangement.Bottom
         ) {
             when (keyBoardField.value) {
-                keyboard_field -> Keyboard(lessonUnit.value.keyButtonsWords, inputtedText)
-                input_field -> InputLesson(inputtedText)
+                keyboard_field -> Keyboard(lessonUnit.value.keyButtonsWords, bottomScreenText)
+                input_field -> InputLesson(topScreenText, bottomScreenText)
             }
         }
     }
 }
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun InputLesson(inputtedText: MutableState<String>) {
+fun InputLesson(forTranslateText: MutableState<String>, inputtedText: MutableState<String>) {
 
     val textFromField = remember {
         mutableStateOf("")
@@ -198,9 +179,11 @@ fun InputLesson(inputtedText: MutableState<String>) {
 
     val isTextValid = textFromField.value.length < 70
 
+
     Column(
         modifier = Modifier
-            .background(Blue10)
+            .padding(10.dp)
+            .background(Blue15)
             .fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Bottom
@@ -212,7 +195,7 @@ fun InputLesson(inputtedText: MutableState<String>) {
             },
             modifier = Modifier
                 .padding(bottom = 10.dp, top = 30.dp)
-                .background(Blue10),
+                .background(Blue15),
             colors = ButtonDefaults.textButtonColors(containerColor = if (textFromField.value.isEmpty() || !isTextValid) Blue10 else Green50),
             border = BorderStroke(2.dp, Color.White)
         ) {
@@ -222,11 +205,19 @@ fun InputLesson(inputtedText: MutableState<String>) {
                 style = TextStyle(color = Color.White, fontSize = 18.sp)
             )
         }
+    }
 
+    Column(
+        modifier = Modifier
+            .background(Blue10)
+            .fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Bottom
+    ) {
         TextField(
             placeholder = {
                 Text(
-                    text = "✎ Введите текст",
+                    text = "✎ Введите перевод текста: ${forTranslateText.value.replace(topText_field, "")}",
                     color = Color.LightGray,
                     fontSize = 16.sp
                 )
@@ -237,8 +228,11 @@ fun InputLesson(inputtedText: MutableState<String>) {
                 .background(Blue10)
                 .border(10.dp, Blue10)
                 .fillMaxWidth()
-                .padding(bottom = 50.dp, top = 10.dp),
-            textStyle = TextStyle(fontSize = 20.sp, color = if (isTextValid) Color.White else  Red30),
+                .padding(bottom = 10.dp, top = 30.dp),
+            textStyle = TextStyle(
+                fontSize = 20.sp,
+                color = if (isTextValid) Color.White else Red30
+            ),
             colors = TextFieldDefaults.outlinedTextFieldColors(Blue10)
         )
     }
@@ -271,51 +265,50 @@ fun Keyboard(keyList: List<String>, inputtedText: MutableState<String>) {
         mutableStateListOf<Int>()
     }
 
+
     Column(
         modifier = Modifier
-            .background(Blue10)
+            .padding(top = 10.dp, bottom = 10.dp)
             .fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Bottom
+        verticalArrangement = Arrangement.Center
+    ) {
+
+        TextButton(
+            onClick = {
+                if (buttonIndexCounter.isNotEmpty()) {
+                    val lastIndex = buttonIndexCounter.removeLast()
+                    inputtedText.value = inputtedText.value.replace(" ${keyList[lastIndex]}", "")
+                    buttonsSet[lastIndex] = keyList[lastIndex]
+                }
+            },
+            modifier = Modifier
+                .padding(5.dp)
+                .background(Blue15),
+            colors = ButtonDefaults.textButtonColors(containerColor = Green50),
+            border = BorderStroke(2.dp, Color.White) // Blue30  Blue10  Color.White
+        ) {
+            Text(
+                modifier = Modifier.padding(10.dp),
+                text = "Редактировать текст",
+                style = TextStyle(color = Color.White, fontSize = 18.sp)
+            )
+        }
+    }
+
+    Column(
+        modifier = Modifier
+            .background(Blue15) // Blue10
+            .fillMaxWidth()
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Top
 
     ) {
 
-        Column(
-            modifier = Modifier
-                .weight(0.4F)
-                .padding(top = 10.dp, bottom = 10.dp)
-                .fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-
-            TextButton(
-                onClick = {
-                    if (buttonIndexCounter.isNotEmpty()){
-                        val lastIndex = buttonIndexCounter.removeLast()
-                        inputtedText.value = inputtedText.value.replace(" ${keyList[lastIndex]}", "")
-                        buttonsSet[lastIndex] = keyList[lastIndex]
-                    }
-                },
-                modifier = Modifier
-                    //  .padding(10.dp)
-                    .background(Blue10),
-                colors = ButtonDefaults.textButtonColors(containerColor = Green50),
-                border = BorderStroke(2.dp, Color.White) // Blue30  Blue10  Color.White
-            ) {
-                Text(
-                    modifier = Modifier.padding(10.dp),
-                    text = "Редактировать текст",
-                    style = TextStyle(color = Color.White, fontSize = 18.sp)
-                )
-            }
-
-        }
-
         Row(
             modifier = Modifier
-                .weight(0.15F)
-                .padding(1.dp)
+                .padding(top = 20.dp, start = 3.dp, end = 3.dp, bottom = 20.dp)
                 .fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
@@ -327,7 +320,7 @@ fun Keyboard(keyList: List<String>, inputtedText: MutableState<String>) {
                         indication = rememberRipple(
                             bounded = false,
                             radius = 40.dp,
-                            color = Blue15
+                            color = Blue10
                         ),
                         onClick = {
                             if (buttonsSet[0].isNotEmpty()) {
@@ -337,7 +330,10 @@ fun Keyboard(keyList: List<String>, inputtedText: MutableState<String>) {
                             }
                         }),
                 text = buttonsSet[0],
-                style = TextStyle(color = Color.White, fontSize = if (buttonsSet[0].length > 12) 12.sp else 20.sp)
+                style = TextStyle(
+                    color = Color.White,
+                    fontSize = if (buttonsSet[0].length > 12) 12.sp else 20.sp
+                )
             )
 
             Text(
@@ -348,7 +344,7 @@ fun Keyboard(keyList: List<String>, inputtedText: MutableState<String>) {
                         indication = rememberRipple(
                             bounded = false,
                             radius = 40.dp,
-                            color = Blue15
+                            color = Blue10
                         ),
                         onClick = {
                             if (buttonsSet[1].isNotEmpty()) {
@@ -357,8 +353,11 @@ fun Keyboard(keyList: List<String>, inputtedText: MutableState<String>) {
                                 buttonIndexCounter.add(1)
                             }
                         }),
-                text =  buttonsSet[1],
-                style = TextStyle(color = Color.White, fontSize = if (buttonsSet[1].length > 12) 12.sp else 20.sp)
+                text = buttonsSet[1],
+                style = TextStyle(
+                    color = Color.White,
+                    fontSize = if (buttonsSet[1].length > 12) 12.sp else 20.sp
+                )
             )
 
             Text(
@@ -369,7 +368,7 @@ fun Keyboard(keyList: List<String>, inputtedText: MutableState<String>) {
                         indication = rememberRipple(
                             bounded = false,
                             radius = 40.dp,
-                            color = Blue15
+                            color = Blue10
                         ),
                         onClick = {
                             if (buttonsSet[2].isNotEmpty()) {
@@ -378,15 +377,17 @@ fun Keyboard(keyList: List<String>, inputtedText: MutableState<String>) {
                                 buttonIndexCounter.add(2)
                             }
                         }),
-                text =  buttonsSet[2],
-                style = TextStyle(color = Color.White, fontSize = if (buttonsSet[2].length > 12) 12.sp else 20.sp)
+                text = buttonsSet[2],
+                style = TextStyle(
+                    color = Color.White,
+                    fontSize = if (buttonsSet[2].length > 12) 12.sp else 20.sp
+                )
             )
         }
 
         Row(
             modifier = Modifier
-                .weight(0.15F)
-                .padding(1.dp)
+                .padding(top = 10.dp, start = 3.dp, end = 3.dp, bottom = 20.dp)
                 .fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
@@ -399,7 +400,7 @@ fun Keyboard(keyList: List<String>, inputtedText: MutableState<String>) {
                         indication = rememberRipple(
                             bounded = false,
                             radius = 40.dp,
-                            color = Blue15
+                            color = Blue10
                         ),
                         onClick = {
                             if (buttonsSet[3].isNotEmpty()) {
@@ -408,8 +409,11 @@ fun Keyboard(keyList: List<String>, inputtedText: MutableState<String>) {
                                 buttonIndexCounter.add(3)
                             }
                         }),
-                text =  buttonsSet[3],
-                style = TextStyle(color = Color.White, fontSize = if (buttonsSet[3].length > 12) 12.sp else 20.sp)
+                text = buttonsSet[3],
+                style = TextStyle(
+                    color = Color.White,
+                    fontSize = if (buttonsSet[3].length > 12) 12.sp else 20.sp
+                )
             )
 
             Text(
@@ -420,7 +424,7 @@ fun Keyboard(keyList: List<String>, inputtedText: MutableState<String>) {
                         indication = rememberRipple(
                             bounded = false,
                             radius = 40.dp,
-                            color = Blue15
+                            color = Blue10
                         ),
                         onClick = {
                             if (buttonsSet[4].isNotEmpty()) {
@@ -429,8 +433,11 @@ fun Keyboard(keyList: List<String>, inputtedText: MutableState<String>) {
                                 buttonIndexCounter.add(4)
                             }
                         }),
-                text =  buttonsSet[4],
-                style = TextStyle(color = Color.White, fontSize = if (buttonsSet[4].length > 12) 12.sp else 20.sp)
+                text = buttonsSet[4],
+                style = TextStyle(
+                    color = Color.White,
+                    fontSize = if (buttonsSet[4].length > 12) 12.sp else 20.sp
+                )
             )
 
             Text(
@@ -441,7 +448,7 @@ fun Keyboard(keyList: List<String>, inputtedText: MutableState<String>) {
                         indication = rememberRipple(
                             bounded = false,
                             radius = 40.dp,
-                            color = Blue15
+                            color = Blue10
                         ),
                         onClick = {
                             if (buttonsSet[5].isNotEmpty()) {
@@ -450,16 +457,18 @@ fun Keyboard(keyList: List<String>, inputtedText: MutableState<String>) {
                                 buttonIndexCounter.add(5)
                             }
                         }),
-                text =  buttonsSet[5],
-                style = TextStyle(color = Color.White, fontSize = if (buttonsSet[5].length > 12) 12.sp else 20.sp)
+                text = buttonsSet[5],
+                style = TextStyle(
+                    color = Color.White,
+                    fontSize = if (buttonsSet[5].length > 12) 12.sp else 20.sp
+                )
             )
 
         }
 
         Row(
             modifier = Modifier
-                .weight(0.15F)
-                .padding(1.dp)
+                .padding(top = 10.dp, start = 3.dp, end = 3.dp, bottom = 20.dp)
                 .fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
@@ -472,7 +481,7 @@ fun Keyboard(keyList: List<String>, inputtedText: MutableState<String>) {
                         indication = rememberRipple(
                             bounded = false,
                             radius = 40.dp,
-                            color = Blue15
+                            color = Blue10
                         ),
                         onClick = {
                             if (buttonsSet[6].isNotEmpty()) {
@@ -481,8 +490,11 @@ fun Keyboard(keyList: List<String>, inputtedText: MutableState<String>) {
                                 buttonIndexCounter.add(6)
                             }
                         }),
-                text =  buttonsSet[6],
-                style = TextStyle(color = Color.White, fontSize = if (buttonsSet[6].length > 12) 12.sp else 20.sp)
+                text = buttonsSet[6],
+                style = TextStyle(
+                    color = Color.White,
+                    fontSize = if (buttonsSet[6].length > 12) 12.sp else 20.sp
+                )
             )
 
             Text(
@@ -493,7 +505,7 @@ fun Keyboard(keyList: List<String>, inputtedText: MutableState<String>) {
                         indication = rememberRipple(
                             bounded = false,
                             radius = 40.dp,
-                            color = Blue15
+                            color = Blue10
                         ),
                         onClick = {
                             if (buttonsSet[7].isNotEmpty()) {
@@ -502,15 +514,17 @@ fun Keyboard(keyList: List<String>, inputtedText: MutableState<String>) {
                                 buttonIndexCounter.add(7)
                             }
                         }),
-                text =  buttonsSet[7],
-                style = TextStyle(color = Color.White, fontSize = if (buttonsSet[7].length > 12) 12.sp else 20.sp)
+                text = buttonsSet[7],
+                style = TextStyle(
+                    color = Color.White,
+                    fontSize = if (buttonsSet[7].length > 12) 12.sp else 20.sp
+                )
             )
         }
 
         Row(
             modifier = Modifier
-                .weight(0.15F)
-                .padding(1.dp)
+                .padding(top = 10.dp, start = 3.dp, end = 3.dp, bottom = 20.dp)
                 .fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
@@ -522,7 +536,7 @@ fun Keyboard(keyList: List<String>, inputtedText: MutableState<String>) {
                         indication = rememberRipple(
                             bounded = false,
                             radius = 40.dp,
-                            color = Blue15
+                            color = Blue10
                         ),
                         onClick = {
                             if (buttonsSet[8].isNotEmpty()) {
@@ -531,8 +545,11 @@ fun Keyboard(keyList: List<String>, inputtedText: MutableState<String>) {
                                 buttonIndexCounter.add(8)
                             }
                         }),
-                text =  buttonsSet[8],
-                style = TextStyle(color = Color.White, fontSize = if (buttonsSet[8].length > 12) 12.sp else 20.sp)
+                text = buttonsSet[8],
+                style = TextStyle(
+                    color = Color.White,
+                    fontSize = if (buttonsSet[8].length > 12) 12.sp else 20.sp
+                )
             )
 
             Text(
@@ -543,7 +560,7 @@ fun Keyboard(keyList: List<String>, inputtedText: MutableState<String>) {
                         indication = rememberRipple(
                             bounded = false,
                             radius = 40.dp,
-                            color = Blue15
+                            color = Blue10
                         ),
                         onClick = {
                             if (buttonsSet[9].isNotEmpty()) {
@@ -552,10 +569,13 @@ fun Keyboard(keyList: List<String>, inputtedText: MutableState<String>) {
                                 buttonIndexCounter.add(9)
                             }
                         }),
-                text =  buttonsSet[9],
-                style = TextStyle(color = Color.White, fontSize = if (buttonsSet[9].length > 12) 12.sp else 20.sp)
+                text = buttonsSet[9],
+                style = TextStyle(
+                    color = Color.White,
+                    fontSize = if (buttonsSet[9].length > 12) 12.sp else 20.sp
+                )
             )
         }
     }
-
 }
+
