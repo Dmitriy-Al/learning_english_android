@@ -5,6 +5,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Update
 
 @Dao
 interface Dao {
@@ -15,6 +16,9 @@ interface Dao {
 
     @Delete
     fun deleteLessonInDb(entity: UserLesson)
+
+    @Update
+    fun replaceLessonInDb(oldEntity: UserLesson, newEntity: UserLesson)
 
 
     @Query("SELECT * FROM lessons_table")

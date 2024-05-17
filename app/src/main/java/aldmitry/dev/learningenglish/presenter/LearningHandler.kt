@@ -14,16 +14,10 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 
 
-class LearningHandler(private val chooseLearningTypeSection: LearningTypeSection, private val lesson: Learnable, private val userLessons: MutableList<UserLesson>) {
+class LearningHandler(private val chooseLearningTypeSection: LearningTypeSection, private val lesson: Learnable, private val lessons: List<UserLesson>) {
 
-    fun receiveLessonTextCollector(): List<LessonUnit> { // TODO list в map
-        val userLessonText = mutableMapOf<String, String>()
-
-        for (elem in userLessons) {
-            if (elem.lessonTitle == lesson.receiveTitle()) {
-                userLessonText[elem.russianText] = elem.englishText
-            }
-        }
+    fun receiveLessonTextCollector(): List<LessonUnit> {
+        val userLessonText = lessons.associate { it.russianText to it.englishText }
         return lesson.takeLesson(chooseLearningTypeSection, userLessonText)
     }
 }

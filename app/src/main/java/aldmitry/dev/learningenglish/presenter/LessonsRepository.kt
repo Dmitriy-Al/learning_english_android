@@ -26,18 +26,29 @@ class LessonsRepository(private val dao: Dao) {
     }
 
 
+    suspend fun receiveLessonsByTitle(list: MutableState<List<UserLesson>>, lessonTitle: String) {
+        withContext(Job() + Dispatchers.IO) {
+            list.value = dao.receiveLessonsByTitle(lessonTitle)
+        }
+    }
+
+
+    suspend fun replaceLesson(oldEnglishText: String, oldRussianText: String,
+                              oldLessonTitle: String, newEnglishText: String,
+                              newRussianText: String, newLessonTitle: String) {
+        val oldTitledUserLesson = UserLesson(oldEnglishText, oldRussianText, oldLessonTitle)
+        val newTitledUserLesson = UserLesson(newEnglishText, newRussianText, newLessonTitle)
+        withContext(Job() + Dispatchers.IO) {
+            dao.replaceLessonInDb(oldTitledUserLesson, newTitledUserLesson)
+        }
+    }
+
+
     suspend fun receiveLessons(lessonList: MutableState<MutableList<UserLesson>>) {
         withContext(Job() + Dispatchers.IO) {
             lessonList.value = dao.receiveLessons()
         }
     }
 
-
-    suspend fun receiveLessonsByTitle(list: MutableList<UserLesson>, lessonTitle: String) {
-        withContext(Job() + Dispatchers.IO) {
-            list.addAll(dao.receiveLessonsByTitle(lessonTitle))
-        }
-    }
-
-
 }
+

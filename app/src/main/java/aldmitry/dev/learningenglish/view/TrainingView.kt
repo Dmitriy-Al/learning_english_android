@@ -98,7 +98,18 @@ fun TrainingView(lessonUnits: List<LessonUnit>) {
     Column(
         modifier = Modifier
             .background(Blue15)
-            .fillMaxSize(),
+            .fillMaxSize()
+            .clickable(
+                MutableInteractionSource(),
+                indication = rememberRipple(
+                    bounded = false,
+                    radius = 0.dp,
+                    color = Blue15
+                ),
+                onClick = {
+                    if(isAnswer.value) topScreenText.value = ""
+                }
+            ),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween
     ) {
@@ -109,7 +120,7 @@ fun TrainingView(lessonUnits: List<LessonUnit>) {
             Text(
                 modifier = Modifier
                     .padding(top = 20.dp, bottom = 5.dp, start = 20.dp),
-                text = "Ответов: ${answerCounter.value}", // "Введите перевод текста:
+                text = "Ответов: ${answerCounter.value}",
                 style = TextStyle(color = Color.White, fontSize = 18.sp),
                 textAlign = TextAlign.Start
             )
@@ -131,7 +142,7 @@ fun TrainingView(lessonUnits: List<LessonUnit>) {
                 Text(
                     text = topScreenText.value,
                     style = TextStyle(
-                        color = if (isAnswer.value) Green30 else Color.White,
+                        color = if (keyBoardField.value == answer_field) Green30 else Color.White,
                         fontSize = 23.sp
                     )
                 )
@@ -152,7 +163,6 @@ fun TrainingView(lessonUnits: List<LessonUnit>) {
                 )
             }
         }
-
         Column(
             modifier = Modifier
                 .padding(top = 20.dp, bottom = 20.dp)
@@ -236,7 +246,6 @@ fun InputLesson(forTranslateText: MutableState<String>, inputtedText: MutableSta
             colors = TextFieldDefaults.outlinedTextFieldColors(Blue10)
         )
     }
-
     Spacer(
         modifier = Modifier.padding(bottom = 10.dp)
     )
@@ -273,7 +282,6 @@ fun Keyboard(keyList: List<String>, inputtedText: MutableState<String>) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-
         TextButton(
             onClick = {
                 if (buttonIndexCounter.isNotEmpty()) {
@@ -359,7 +367,6 @@ fun Keyboard(keyList: List<String>, inputtedText: MutableState<String>) {
                     fontSize = if (buttonsSet[1].length > 12) 12.sp else 20.sp
                 )
             )
-
             Text(
                 modifier = Modifier
                     .padding(1.dp)
@@ -465,7 +472,6 @@ fun Keyboard(keyList: List<String>, inputtedText: MutableState<String>) {
             )
 
         }
-
         Row(
             modifier = Modifier
                 .padding(top = 10.dp, start = 3.dp, end = 3.dp, bottom = 20.dp)
@@ -551,7 +557,6 @@ fun Keyboard(keyList: List<String>, inputtedText: MutableState<String>) {
                     fontSize = if (buttonsSet[8].length > 12) 12.sp else 20.sp
                 )
             )
-
             Text(
                 modifier = Modifier   // .indication(InteractionSource(), Indication())          //.hoverable(MutableInteractionSource(), false)
                     .padding(1.dp)
@@ -578,4 +583,3 @@ fun Keyboard(keyList: List<String>, inputtedText: MutableState<String>) {
         }
     }
 }
-

@@ -60,7 +60,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 
 class MainActivity : ComponentActivity() {
@@ -69,7 +68,7 @@ class MainActivity : ComponentActivity() {
         DbInitializer.init(applicationContext)
         val repository = DbInitializer.lessonsRepository
 
-        super.onCreate(savedInstanceState);
+        super.onCreate(savedInstanceState)
 
         setContent {
 
@@ -82,32 +81,30 @@ class MainActivity : ComponentActivity() {
             }
 
             val lesson = remember {
-                mutableStateOf<Learnable>(PresentSimple()) // TODO <Learnable>
+                mutableStateOf<Learnable>(PresentSimple())
             }
 
             val userLessons = remember {
-                mutableStateOf<MutableList<UserLesson>>(mutableListOf()) // TODO S
+                mutableStateOf<List<UserLesson>>(listOf())
             }
 
-            //  val onUserLessonsChange = remember {mutableStateOf(0)}
-
-            LaunchedEffect(controllerText.value) {//  onUserLessonsChange.value  chooseLearningTypeSection.value
+            LaunchedEffect(lesson.value) {//  onUserLessonsChange.value  chooseLearningTypeSection.value ++lesson.value, controllerText.value
                 CoroutineScope(Job() + Dispatchers.Default).launch {
-                    receiveUserLessons(repository, userLessons)
+                    receiveUserLessons(repository, userLessons, lesson.value.receiveTitle())
                 }
             }
 
             val navController = rememberNavController();
 
-            NavHost(navController = navController, startDestination =  mainScreen_view) {
-                composable( mainScreen_view) { // composable - добавляет компонуемый объект в NavGraphBuilder
-                    //  onUserLessonsChange.value++
+            NavHost(navController = navController, startDestination = mainScreen_view) {
+                composable(mainScreen_view) { // composable - добавляет компонуемый объект в NavGraphBuilder
                     Screen(
                         { navController.navigate(controllerText.value) },
                         controllerText,
                         lesson,
                         chooseLearningTypeSection
                     )
+                    controllerText.value = "" // сброс изменения цветовой схемы кнопки "Словарь"
                 }
 
                 composable(addTextScreen_view) { // Экран добавления текста
@@ -122,11 +119,21 @@ class MainActivity : ComponentActivity() {
                     SettingsScreen()
                 }
 
-                composable(training_view) { // Экран тренировок
-                    val learningHandler = LearningHandler(chooseLearningTypeSection.value, lesson.value, userLessons.value);
-                    val lessonUnits: List<LessonUnit> = learningHandler.receiveLessonTextCollector()
-                    if (lessonUnits.isEmpty()) InfoView("\n\n\n\n\n\nУ вас ещё нет добавленных слов в этой категории!") else TrainingView(lessonUnits)  // TrainingScreenTest(lessonUnits) TrainingScreen(learningHandler.receiveLessonTextCollector())
+                composable("textEdition_view") {  // TODO
+                    TextEditionView(LearningTypeSection.DICTIONARY_TEXTS.title, repository) // "Разные"  "Словарь"
                 }
+
+                composable("training_view") {// "TRAINING_VIEW"
+                    val learningHandler = LearningHandler(
+                        chooseLearningTypeSection.value,
+                        lesson.value,
+                        userLessons.value
+                    )
+                    val lessonUnits: List<LessonUnit> = learningHandler.receiveLessonTextCollector()
+                    if (lessonUnits.isEmpty()) InfoView("\n\n\n\n\n\nУ вас ещё нет добавленных слов в этой категории") else TrainingView(lessonUnits)
+                }
+
+                userLessons.value = listOf()
             }
         }
     }
@@ -134,12 +141,17 @@ class MainActivity : ComponentActivity() {
 
 
 @Composable
-fun Screen(buttonClick: () -> Unit, controllerText: MutableState<String>,
-           chooseLesson: MutableState<Learnable>,
-           chooseLearningTypeSection: MutableState<LearningTypeSection>) {
+fun Screen(
+    buttonClick: () -> Unit,
+    controllerText: MutableState<String>,
+    chooseLesson: MutableState<Learnable>,
+    chooseLearningTypeSection: MutableState<LearningTypeSection>
+) {
 
-    val lessonCategories = listOf(PresentContinuous(), PresentSimple(), PassiveVoice(),
-        DateAndTime(), PerfectTense(), MuchMany(), Compares(), VariousTexts(), WordsForLearning())
+    val lessonCategories = listOf(
+        PresentContinuous(), PresentSimple(), PassiveVoice(),
+        DateAndTime(), PerfectTense(), MuchMany(), Compares(), VariousTexts(), WordsForLearning()
+    )
 
     Column(
         modifier = Modifier
@@ -187,17 +199,24 @@ fun Screen(buttonClick: () -> Unit, controllerText: MutableState<String>,
             }
 
             TextButton(
-                onClick = { chooseLearningTypeSection.value = LearningTypeSection.SHARE_TEXTS },
+                onClick = {
+                    controllerText.value = "textEdition_view" // TODO
+                    buttonClick()
+                },
                 modifier = Modifier
                     .padding(bottom = 5.dp, start = 3.dp, end = 3.dp)
                     .background(Blue15),
-                colors = ButtonDefaults.textButtonColors(containerColor = if (chooseLearningTypeSection.value == LearningTypeSection.SHARE_TEXTS) Blue30 else Blue15),
-                border = BorderStroke(3.dp, if (chooseLearningTypeSection.value == LearningTypeSection.SHARE_TEXTS) Color.White else Blue15) // Blue30  Blue10  Color.White
-
+                // colors = ButtonDefaults.textButtonColors(containerColor = if (chooseLearningTypeSection.value == LearningTypeSection.DICTIONARY_TEXTS) Blue30 else Blue15),
+               colors = ButtonDefaults.textButtonColors(containerColor = if (controllerText.value == "textEdition_view") Blue30 else Blue15),
+                border = BorderStroke(
+                    3.dp,
+                    // if (chooseLearningTypeSection.value == LearningTypeSection.DICTIONARY_TEXTS) Color.White else Blue15
+                    if (controllerText.value == "textEdition_view") Color.White else Blue15
+                )
             ) {
                 Text(
                     modifier = Modifier.padding(5.dp),
-                    text = LearningTypeSection.SHARE_TEXTS.title, // "Добавить собственный текст"
+                    text = LearningTypeSection.DICTIONARY_TEXTS.title, // "Добавить собственный текст"
                     style = TextStyle(color = Color.White, fontSize = 18.sp)
                 )
             }
@@ -208,7 +227,10 @@ fun Screen(buttonClick: () -> Unit, controllerText: MutableState<String>,
                     .padding(bottom = 5.dp, start = 3.dp, end = 3.dp)
                     .background(Blue15),
                 colors = ButtonDefaults.textButtonColors(containerColor = if (chooseLearningTypeSection.value == LearningTypeSection.USERS_TEXTS) Blue30 else Blue15),
-                border = BorderStroke(3.dp, if (chooseLearningTypeSection.value == LearningTypeSection.USERS_TEXTS) Color.White else Blue15) // Blue30  Blue10  Color.White
+                border = BorderStroke(
+                    3.dp,
+                    if (chooseLearningTypeSection.value == LearningTypeSection.USERS_TEXTS) Color.White else Blue15
+                ) // Blue30  Blue10  Color.White
 
             ) {
                 Text(
@@ -224,7 +246,10 @@ fun Screen(buttonClick: () -> Unit, controllerText: MutableState<String>,
                     .padding(bottom = 10.dp, start = 3.dp, end = 3.dp)
                     .background(Blue15),
                 colors = ButtonDefaults.textButtonColors(containerColor = if (chooseLearningTypeSection.value == LearningTypeSection.UNITED_TEXTS) Blue30 else Blue15),
-                border = BorderStroke(3.dp, if (chooseLearningTypeSection.value == LearningTypeSection.UNITED_TEXTS) Color.White else Blue15) // , shape = RoundedCornerShape(10.dp)
+                border = BorderStroke(
+                    3.dp,
+                    if (chooseLearningTypeSection.value == LearningTypeSection.UNITED_TEXTS) Color.White else Blue15
+                ) // , shape = RoundedCornerShape(10.dp)
             ) {
                 Text(
                     modifier = Modifier.padding(5.dp),
@@ -233,25 +258,26 @@ fun Screen(buttonClick: () -> Unit, controllerText: MutableState<String>,
                 )
             }
         }
-
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Blue10) // цвет фона между рядами клавиш
-                .padding(bottom = 10.dp)
-        ) {
-            itemsIndexed(lessonCategories) {
-                _, lesson -> LessonPage(buttonClick, controllerText, chooseLesson, lesson)
-
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Blue10) // цвет фона между рядами клавиш
+                    .padding(bottom = 10.dp)
+            ) {
+                itemsIndexed(lessonCategories) { _, lesson ->
+                    LessonPage(buttonClick, controllerText, chooseLesson, lesson)
+                }
             }
-        }
     }
 }
 
 
-suspend fun receiveUserLessons(repository: LessonsRepository, userLessons: MutableState<MutableList<UserLesson>>) {
-    withContext(Dispatchers.IO) {
-        repository.receiveLessons(userLessons)
+suspend fun receiveUserLessons(
+    repository: LessonsRepository,
+    userLessons: MutableState<List<UserLesson>>, lessonTitle: String
+) {
+    CoroutineScope(Job()).launch {
+        repository.receiveLessonsByTitle(userLessons, lessonTitle)
     }
 }
 

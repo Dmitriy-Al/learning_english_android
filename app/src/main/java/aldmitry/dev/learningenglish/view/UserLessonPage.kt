@@ -2,6 +2,7 @@ package aldmitry.dev.learningenglish.view
 
 import aldmitry.dev.learningenglish.database.LessonDatabase
 import aldmitry.dev.learningenglish.database.UserLesson
+import aldmitry.dev.learningenglish.presenter.LearningTypeSection
 import aldmitry.dev.learningenglish.presenter.LessonsRepository
 import aldmitry.dev.learningenglish.ui.theme.Blue10
 import aldmitry.dev.learningenglish.ui.theme.Green50
@@ -43,12 +44,18 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 @Composable
-fun UserLessonPage(userLesson: UserLesson, repository: LessonsRepository,
-                   originIdText: MutableState<String>, englishText: MutableState<String>,
-                   russianText: MutableState<String>, changeKey: MutableState<Int>) {
+fun UserLessonPage(
+    userLesson: UserLesson, repository: LessonsRepository,
+    originIdText: MutableState<String>, englishText: MutableState<String>,
+    russianText: MutableState<String>, changeKey: MutableState<Int>
+) {
 
     val cardColor = remember {
         mutableStateOf(Green50)
+    }
+
+    val buttonTextColor = remember {
+        mutableStateOf(Blue10)
     }
 
     val cardValueChange = remember {
@@ -87,33 +94,52 @@ fun UserLessonPage(userLesson: UserLesson, repository: LessonsRepository,
                 ) {
                     Text(
                         text = "Изменить",
-                        color = Blue10,
+                        color = buttonTextColor.value,
                         fontSize = 14.sp,
                         modifier = Modifier.padding(5.dp)
                     )
                 }
 
-                TextButton(
-                    onClick = { /*TODO*/ }
-                ) {
-                    Text(
-                        text = "В словарь",
-                        color = Blue10, // Blue10
-                        fontSize = 14.sp,
-                        modifier = Modifier.padding(5.dp)
-                    )
+                if (userLesson.lessonTitle != LearningTypeSection.DICTIONARY_TEXTS.title) {
+                    TextButton(
+                        onClick = {
+                            CoroutineScope(Job() + Dispatchers.IO).launch {
+                                repository.replaceLesson(
+                                    userLesson.englishText,
+                                    userLesson.russianText,
+                                    userLesson.lessonTitle,
+                                    userLesson.englishText,
+                                    userLesson.russianText,
+                                    LearningTypeSection.DICTIONARY_TEXTS.title
+                                )
+                            }
+                            changeKey.value++
+                        }
+                    ) {
+                        Text(
+                            text = "В словарь",
+                            color = buttonTextColor.value, // Blue10
+                            fontSize = 14.sp,
+                            modifier = Modifier.padding(5.dp)
+                        )
+                    }
                 }
 
                 TextButton(
                     onClick = {
                         CoroutineScope(Job() + Dispatchers.IO).launch {
-                            repository.deleteLesson(userLesson.englishText, userLesson.russianText, userLesson.lessonTitle)
+                            repository.deleteLesson(
+                                userLesson.englishText,
+                                userLesson.russianText,
+                                userLesson.lessonTitle
+                            )
                         }
-                        changeKey.value++}
+                        changeKey.value++
+                    }
                 ) {
                     Text(
                         text = "Удалить",
-                        color = Blue10,
+                        color = buttonTextColor.value,
                         fontSize = 14.sp,
                         modifier = Modifier.padding(5.dp)
                     )
@@ -143,61 +169,14 @@ fun UserLessonPage(userLesson: UserLesson, repository: LessonsRepository,
                 )
             }
         }
-
-
-        /*
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "• ${userLesson.russianText}\n\n• ${userLesson.englishText}",
-                color = Color.White,
-                fontSize = 16.sp,
-                modifier = Modifier
-                    .weight(1F)
-                    .padding(start = 10.dp, end = 10.dp, top = 5.dp, bottom = 5.dp)
-            )
-            Column(
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.End
-            ) {
-                IconButton(
-                    onClick = {
-                        originIdText.value = userLesson.englishText
-                        englishText.value = userLesson.englishText
-                        russianText.value = userLesson.russianText
-                        cardValueChange.value = originIdText.value
-                        cardColor.value = Green60
-                    },
-                    modifier = Modifier
-                        .padding(5.dp)
-                        .weight(1F)
-                ) {
-                    Icon(imageVector = Icons.Default.Refresh, contentDescription = "Refresh")
-                }
-
-                IconButton(
-                    onClick = {
-                        CoroutineScope(Job() + Dispatchers.IO).launch {
-                            repository.deleteLesson(userLesson.englishText, userLesson.russianText, userLesson.lessonTitle)
-                        }
-                        changeKey.value++
-                    },
-                    modifier = Modifier
-                        .padding(5.dp)
-                        .weight(1F)
-                ) {
-                    Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete")
-                }
-            }
-
-        }
-
-         */
     }
 
-    cardColor.value = if (cardValueChange.value == originIdText.value) Green60 else Green50
+    if (cardValueChange.value == originIdText.value) {
+        cardColor.value = Green60
+        buttonTextColor.value = Color.White
+    } else {
+        cardColor.value = Green50
+        buttonTextColor.value = Blue10
+    }
 
 }

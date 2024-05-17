@@ -45,7 +45,6 @@ import kotlinx.coroutines.launch
 @Composable
 fun TextEditionView(lessonTitle: String, repository: LessonsRepository) {
 
-
     val changeKey = remember {
         mutableStateOf(1)
     }
@@ -63,7 +62,7 @@ fun TextEditionView(lessonTitle: String, repository: LessonsRepository) {
     }
 
     val lessonList = remember {
-        mutableStateOf<MutableList<UserLesson>>(mutableListOf())
+        mutableStateOf<List<UserLesson>>(listOf())
     }
 
 
@@ -74,7 +73,7 @@ fun TextEditionView(lessonTitle: String, repository: LessonsRepository) {
 
     val isTextNotEmpty = russianText.value.isNotEmpty() && englishText.value.isNotEmpty()
 
-        Column(
+    Column(
         modifier = Modifier
             .background(Blue10)
             .fillMaxSize(),
@@ -170,30 +169,30 @@ fun TextEditionView(lessonTitle: String, repository: LessonsRepository) {
             )
         }
 
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Blue10) // цвет фона между рядами клавиш
-                    .padding(bottom = 10.dp)
-            ) {
-                itemsIndexed(lessonList.value.filter { it.lessonTitle == lessonTitle }) { _, lesson -> // TODO it.lessonTitle == lessonTitle
-                    UserLessonPage(
-                        lesson,
-                        repository,
-                        originIdText,
-                        englishText,
-                        russianText,
-                        changeKey
-                    )
-                }
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Blue10) // цвет фона между рядами клавиш
+                .padding(bottom = 10.dp)
+        ) {
+            itemsIndexed(lessonList.value) { _, lesson ->
+                UserLessonPage(
+                    lesson,
+                    repository,
+                    originIdText,
+                    englishText,
+                    russianText,
+                    changeKey
+                )
             }
-
+        }
     }
 
     LaunchedEffect(changeKey.value) {
         CoroutineScope(Job() + Dispatchers.IO).launch {
-            repository.receiveLessons(lessonList)
+            repository.receiveLessonsByTitle(lessonList, lessonTitle)
         }
     }
 
 }
+
