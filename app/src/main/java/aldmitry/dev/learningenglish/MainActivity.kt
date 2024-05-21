@@ -111,7 +111,7 @@ class MainActivity : ComponentActivity() {
                     TextEditionView(lesson.value.receiveTitle(), repository)
                 }
 
-                composable(info_view) { // Экран инфо
+                composable(info_view) { // Экран инфо // TODO
                     InfoView("Создатель приложения:\nАлимов дмитрий\n\nсервера:\nШкитина Александра")
                 }
 
@@ -119,7 +119,7 @@ class MainActivity : ComponentActivity() {
                     SettingsScreen()
                 }
 
-                composable("textEdition_view") {  // TODO
+                composable("textEdition_view") {
                     TextEditionView(LearningTypeSection.DICTIONARY_TEXTS.title, repository) // "Разные"  "Словарь"
                 }
 
@@ -130,7 +130,8 @@ class MainActivity : ComponentActivity() {
                         userLessons.value
                     )
                     val lessonUnits: List<LessonUnit> = learningHandler.receiveLessonTextCollector()
-                    if (lessonUnits.isEmpty()) InfoView("\n\n\n\n\n\nУ вас ещё нет добавленных слов в этой категории") else TrainingView(lessonUnits)
+
+                    if (lessonUnits.isEmpty()) InfoView("\n\n\n\n\n\nУ вас ещё нет добавленных слов в этой категории") else TrainingView(lessonUnits, lesson.value.receiveHintPictureId())
                 }
 
                 userLessons.value = listOf()

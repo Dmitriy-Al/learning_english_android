@@ -1,5 +1,6 @@
 package aldmitry.dev.learningenglish.model.lessons
 
+import aldmitry.dev.learningenglish.R
 import aldmitry.dev.learningenglish.model.Learnable
 import aldmitry.dev.learningenglish.presenter.LearningTypeSection
 import aldmitry.dev.learningenglish.presenter.LessonCreator
@@ -8,6 +9,9 @@ import aldmitry.dev.learningenglish.presenter.LessonUnit
 class PerfectTense : Learnable {
 
     private val title = "Perfect tense"
+
+    private val hintPictureId = R.drawable.perfect_tence
+
 
     private val appLessonTexts = mapOf("Я (сейчас) посмотрел фильм" to "I have seen the movie", "Я (когда-то в прошлом) смотрел этот фильм" to "I had seen this movie",
         "Я увижу этот фильм к вечеру" to "I will have seen this movie by evening", "У него (к настоящему моменту) была собака" to "he has had a dog", "У него (когда-то в прошлом) была собака" to "he had had a dog",
@@ -38,5 +42,8 @@ class PerfectTense : Learnable {
         return LessonCreator().createLesson(learningTypeSection, lessonTexts, appLessonTexts)
     }
 
+    override fun receiveHintPictureId(): Int {
+        return hintPictureId
+    }
 
 }

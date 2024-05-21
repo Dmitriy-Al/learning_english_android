@@ -1,5 +1,6 @@
 package aldmitry.dev.learningenglish.model.lessons
 
+import aldmitry.dev.learningenglish.R
 import aldmitry.dev.learningenglish.model.Learnable
 import aldmitry.dev.learningenglish.presenter.LearningTypeSection
 import aldmitry.dev.learningenglish.presenter.LessonCreator
@@ -8,6 +9,8 @@ import aldmitry.dev.learningenglish.presenter.LessonUnit
 class PresentContinuous : Learnable {
 
     private val title = "Present continuous"
+
+    private val hintPictureId = R.drawable.present_continuos
 
     private val appLessonTexts = mapOf("Лондон - столица Великобритании" to "London is the capital of Great Britain", "Манчестер - не столица Великобритании" to "Manchester is not the capital of Great Britain",
         "Лондон - столица Великобритании?" to "is London the capital of Great Britain", "Лондон будет столицей Великобритании" to "London will be the capital of Great Britain",
@@ -41,7 +44,9 @@ class PresentContinuous : Learnable {
         return LessonCreator().createLesson(learningTypeSection, lessonTexts, appLessonTexts)
     }
 
-
+    override fun receiveHintPictureId(): Int {
+        return hintPictureId
+    }
 
 
 }

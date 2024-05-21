@@ -1,5 +1,6 @@
 package aldmitry.dev.learningenglish.model.lessons
 
+import aldmitry.dev.learningenglish.R
 import aldmitry.dev.learningenglish.model.Learnable
 import aldmitry.dev.learningenglish.presenter.LearningTypeSection
 import aldmitry.dev.learningenglish.presenter.LessonCreator
@@ -8,6 +9,9 @@ import aldmitry.dev.learningenglish.presenter.LessonUnit
 class MuchMany : Learnable {
 
     private val title = "Множества"
+
+    private val hintPictureId = R.drawable.many
+
 
     private val appLessonTexts = mapOf("Много столов" to "many tables", "Много ложек" to "many spoons", "Много яблок" to "many apples", "Много денег" to "much money",
         "Было найдено много информации" to "much information has been found", "Много столов" to "many tables", "У них мало денег" to "they have little money", "У них мало монет" to "they have few coins",
@@ -26,5 +30,8 @@ class MuchMany : Learnable {
         return LessonCreator().createLesson(learningTypeSection, lessonTexts, appLessonTexts)
     }
 
+    override fun receiveHintPictureId(): Int {
+        return hintPictureId
+    }
 
 }

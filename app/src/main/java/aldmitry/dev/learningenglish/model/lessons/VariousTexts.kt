@@ -1,5 +1,6 @@
 package aldmitry.dev.learningenglish.model.lessons
 
+import aldmitry.dev.learningenglish.R
 import aldmitry.dev.learningenglish.model.Learnable
 import aldmitry.dev.learningenglish.presenter.LearningTypeSection
 import aldmitry.dev.learningenglish.presenter.LessonCreator
@@ -8,6 +9,9 @@ import aldmitry.dev.learningenglish.presenter.LessonUnit
 class VariousTexts : Learnable {
 
     private val title = "Разные"
+
+    private val hintPictureId = 0
+
 
     private val appLessonTexts = mapOf("Я люблю яблоки" to "I like apples", "как собака" to "like a dog", "Я не знаю ничего" to "I know nothing",
         "Если он захочет (предложения с условиями if и when всегда употребляются в настоящем времени)" to "if he wants",
@@ -28,5 +32,8 @@ class VariousTexts : Learnable {
         return LessonCreator().createLesson(learningTypeSection, lessonTexts, appLessonTexts)
     }
 
+    override fun receiveHintPictureId(): Int {
+        return hintPictureId
+    }
 
 }

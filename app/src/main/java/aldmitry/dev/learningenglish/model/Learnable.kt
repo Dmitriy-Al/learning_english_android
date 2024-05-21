@@ -7,6 +7,8 @@ interface Learnable {
 
     fun receiveTitle(): String
 
+    fun receiveHintPictureId(): Int
+
     fun takeLesson(learningTypeSection: LearningTypeSection, lessonTexts: Map<String, String>): List<LessonUnit>
 
 }

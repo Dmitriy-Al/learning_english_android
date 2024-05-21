@@ -4,13 +4,17 @@ import aldmitry.dev.learningenglish.presenter.LearningProcessor
 import aldmitry.dev.learningenglish.presenter.LessonUnit
 import aldmitry.dev.learningenglish.ui.theme.Blue10
 import aldmitry.dev.learningenglish.ui.theme.Blue15
+import aldmitry.dev.learningenglish.ui.theme.Blue30
 import aldmitry.dev.learningenglish.ui.theme.Green30
 import aldmitry.dev.learningenglish.ui.theme.Green50
 import aldmitry.dev.learningenglish.ui.theme.Red30
+import aldmitry.dev.learningenglish.ui.theme.Yellow30
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -37,6 +41,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -46,14 +52,16 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 
-const val answer_field = "ANSWER"
+const val answer_field = "ANSWER_FIELD"
+const val text_field = "TEXT_FIELD"
+const val hint_field = "HINT_FIELD"
 const val input_field = "INPUT_FIELD"
 const val keyboard_field = "KEYBOARD_FIELD"
 const val topText_field = "Переведите текст:\n"
 
 
 @Composable
-fun TrainingView(lessonUnits: List<LessonUnit>) {
+fun TrainingView(lessonUnits: List<LessonUnit>, hintPictureId: Int) {
 
     val lessonUnit = remember { // урок
         mutableStateOf(lessonUnits[(lessonUnits.indices).random()])
@@ -63,7 +71,15 @@ fun TrainingView(lessonUnits: List<LessonUnit>) {
         mutableStateOf(if (lessonUnit.value.keyButtonsWords.isEmpty()) input_field else keyboard_field)
     }
 
-    val isAnswer = remember { // текст для экрана при правильноом/неправильном ответе // TODO
+    val displayField = remember { // выбор поля keyboard view
+        mutableStateOf(text_field)
+    }
+
+    val isZoomed = remember { //
+        mutableStateOf(false)
+    }
+
+    val isAnswer = remember { // текст для экрана при правильноом/неправильном ответе
         mutableStateOf(false)
     }
 
@@ -79,9 +95,20 @@ fun TrainingView(lessonUnits: List<LessonUnit>) {
         mutableStateOf(0)
     }
 
+    val lp = LearningProcessor(
+        lessonUnit,
+        keyBoardField,
+        isAnswer,
+        answerCounter,
+        topScreenText,
+        bottomScreenText,
+        lessonUnits
+    )
+
 
     LaunchedEffect(topScreenText.value, bottomScreenText.value) {
         CoroutineScope(Dispatchers.IO).launch {
+            /*
             LearningProcessor(
                 lessonUnit,
                 keyBoardField,
@@ -91,6 +118,9 @@ fun TrainingView(lessonUnits: List<LessonUnit>) {
                 bottomScreenText,
                 lessonUnits
             ).process()
+             */
+
+            lp.process()
         }
     }
 
@@ -107,7 +137,7 @@ fun TrainingView(lessonUnits: List<LessonUnit>) {
                     color = Blue15
                 ),
                 onClick = {
-                    if(isAnswer.value) topScreenText.value = ""
+                    if (isAnswer.value) topScreenText.value = ""
                 }
             ),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -115,7 +145,8 @@ fun TrainingView(lessonUnits: List<LessonUnit>) {
     ) {
 
         Row(
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
                 modifier = Modifier
@@ -123,50 +154,74 @@ fun TrainingView(lessonUnits: List<LessonUnit>) {
                 text = "Ответов: ${answerCounter.value}",
                 style = TextStyle(color = Color.White, fontSize = 18.sp),
                 textAlign = TextAlign.Start
-            )
-        }
+            ) // TODO/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+            if (hintPictureId != 0) {
+                TextButton(
+                    onClick = {
+                        if (displayField.value == text_field) {
+                            displayField.value = hint_field
+                        } else {
+                            displayField.value = text_field
+                        }
+                    },
+                    modifier = Modifier
+                        .padding(top = 10.dp, bottom = 5.dp, end = 20.dp)
+                        .background(color = Blue15),
+                    colors = ButtonDefaults.textButtonColors(containerColor = Blue30), // if (displayField.value == text_field) Blue15 else Blue30)
+                    border = BorderStroke(1.dp, Color.White) // Blue30  Blue10  Color.White
+                ) {
+                    Text(
+                        text = if (displayField.value == text_field) "Подсказка" else "Скрыть подсказку",
+                        style = TextStyle(color = Color.White, fontSize = 18.sp),
+                        textAlign = TextAlign.Start
+                    )
+                }
+            }
+        }// TODO/////////////////////////////////////////////////////////////////////////////////////////////////////
 
         Column(
             modifier = Modifier
-                //.background(Blue15)
                 .fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 5.dp, bottom = 10.dp, start = 30.dp, end = 30.dp),
-                horizontalArrangement = Arrangement.Center
-            ) {
-                Text(
-                    text = topScreenText.value,
-                    style = TextStyle(
-                        color = if (keyBoardField.value == answer_field) Green30 else Color.White,
-                        fontSize = 23.sp
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 5.dp, bottom = 10.dp, start = 30.dp, end = 30.dp),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = topScreenText.value,
+                        style = TextStyle(
+                            color = if (keyBoardField.value == answer_field) Green30 else Color.White,
+                            fontSize = 23.sp
+                        )
                     )
-                )
-            }
+                }
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 5.dp, bottom = 5.dp, start = 30.dp, end = 30.dp),
-                horizontalArrangement = Arrangement.Center
-            ) {
-                Text(
-                    text = bottomScreenText.value,
-                    style = TextStyle(
-                        color = if (isAnswer.value) Red30 else Color.White,
-                        fontSize = 23.sp
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 5.dp, bottom = 5.dp, start = 30.dp, end = 30.dp),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = bottomScreenText.value,
+                        style = TextStyle(
+                            color = if (isAnswer.value) Red30 else Color.White,
+                            fontSize = 23.sp
+                        )
                     )
-                )
-            }
+                }
+
+            if (displayField.value == hint_field && keyBoardField.value != answer_field) HintScreen(hintPictureId, isZoomed) // TODO
         }
+
         Column(
             modifier = Modifier
-                .padding(top = 20.dp, bottom = 20.dp)
-                //.background(Blue15)
+                .padding(top = 5.dp, bottom = 20.dp)
                 .fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Bottom
@@ -227,7 +282,12 @@ fun InputLesson(forTranslateText: MutableState<String>, inputtedText: MutableSta
         TextField(
             placeholder = {
                 Text(
-                    text = "✎ Введите перевод текста: ${forTranslateText.value.replace(topText_field, "")}",
+                    text = "✎ Введите перевод текста: ${
+                        forTranslateText.value.replace(
+                            topText_field,
+                            ""
+                        )
+                    }",
                     color = Color.LightGray,
                     fontSize = 16.sp
                 )
@@ -277,8 +337,9 @@ fun Keyboard(keyList: List<String>, inputtedText: MutableState<String>) {
 
     Column(
         modifier = Modifier
-            .padding(top = 10.dp, bottom = 10.dp)
-            .fillMaxWidth(),
+            .padding(top = 5.dp, bottom = 10.dp)
+            .fillMaxWidth()
+            .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
@@ -318,7 +379,7 @@ fun Keyboard(keyList: List<String>, inputtedText: MutableState<String>) {
             modifier = Modifier
                 .padding(top = 20.dp, start = 3.dp, end = 3.dp, bottom = 20.dp)
                 .fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly
+            horizontalArrangement = Arrangement.SpaceEvenly   // .SpaceEvenly
         ) {
             Text(
                 modifier = Modifier
@@ -558,7 +619,7 @@ fun Keyboard(keyList: List<String>, inputtedText: MutableState<String>) {
                 )
             )
             Text(
-                modifier = Modifier   // .indication(InteractionSource(), Indication())          //.hoverable(MutableInteractionSource(), false)
+                modifier = Modifier
                     .padding(1.dp)
                     .clickable(
                         MutableInteractionSource(),
@@ -582,4 +643,49 @@ fun Keyboard(keyList: List<String>, inputtedText: MutableState<String>) {
             )
         }
     }
+}
+
+@Composable
+fun HintScreen(hintPictureId: Int, isZoomed: MutableState<Boolean>) {
+
+        if (isZoomed.value) {
+            Row (
+                modifier = Modifier
+                    .padding(top = 10.dp, bottom = 5.dp)
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState())
+                    .clickable { isZoomed.value = !isZoomed.value },
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .verticalScroll(rememberScrollState()),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Image(
+                        painter = painterResource(id = hintPictureId),
+                        contentDescription = "hint_picture",
+                        contentScale = ContentScale.Crop
+                    )
+                }
+            }
+        } else {
+            Column(
+                modifier = Modifier
+                    .clickable { isZoomed.value = !isZoomed.value }
+                    .padding(top = 10.dp, bottom = 5.dp)
+                    .fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Image(
+                    painter = painterResource(id = hintPictureId),
+                    contentDescription = "hint picture",
+                    contentScale = ContentScale.Fit
+                )
+            }
+        }
 }

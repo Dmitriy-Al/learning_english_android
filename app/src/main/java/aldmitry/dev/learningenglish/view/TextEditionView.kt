@@ -129,23 +129,23 @@ fun TextEditionView(lessonTitle: String, repository: LessonsRepository) {
 
             TextButton(
                 onClick = {
-                    CoroutineScope(Job() + Dispatchers.IO).launch {
-                        if (isTextNotEmpty && isValidText) {
-                            englishText.value = englishText.value.trim()
-                            russianText.value = russianText.value.trim()
+                  CoroutineScope(Job() + Dispatchers.IO).launch {
+                      if (isTextNotEmpty && isValidText) {
+                          englishText.value = englishText.value.trim()
+                          russianText.value = russianText.value.trim()
 
-                            if (originIdText.value == englishText.value) {
-                                repository.addLesson(englishText.value, russianText.value, lessonTitle) // TODO update
-                            } else {
-                                repository.deleteLesson(originIdText.value, russianText.value, lessonTitle) // TODO update
-                                repository.addLesson(englishText.value, russianText.value, lessonTitle) // TODO update
-                            }
-                        }
-                        originIdText.value = ""
-                        englishText.value = ""
-                        russianText.value = ""
-                        changeKey.value++
-                    }
+                          if (originIdText.value == englishText.value) {
+                              repository.addLesson(englishText.value, russianText.value, lessonTitle)
+                          } else {
+                              repository.deleteLesson(originIdText.value, russianText.value, lessonTitle)
+                              repository.addLesson(englishText.value, russianText.value, lessonTitle)
+                          }
+                      }
+                      originIdText.value = ""
+                      englishText.value = ""
+                      russianText.value = ""
+                      changeKey.value++
+                  }
                 },
                 modifier = Modifier
                     .padding(bottom = 20.dp, top = 20.dp)
@@ -193,6 +193,6 @@ fun TextEditionView(lessonTitle: String, repository: LessonsRepository) {
             repository.receiveLessonsByTitle(lessonList, lessonTitle)
         }
     }
-
 }
+
 

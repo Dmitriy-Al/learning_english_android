@@ -1,5 +1,6 @@
 package aldmitry.dev.learningenglish.model.lessons
 
+import aldmitry.dev.learningenglish.R
 import aldmitry.dev.learningenglish.model.Learnable
 import aldmitry.dev.learningenglish.presenter.LearningTypeSection
 import aldmitry.dev.learningenglish.presenter.LessonCreator
@@ -8,6 +9,8 @@ import aldmitry.dev.learningenglish.presenter.LessonUnit
 class PassiveVoice : Learnable {
 
     private val title = "Passive voice"
+
+    private val hintPictureId = R.drawable.pasiive_voice
 
     private val appLessonTexts = mapOf("Ты любим" to "You are loved", "Ты не любим" to "You aren't loved", "Ты любим?" to "are You loved", "Ты будешь любим" to "You will be loved",
         "Ты не будешь любим" to "You won't be loved", "Ты будешь любим?" to "will You be loved", "Ты был любим" to "You were loved", "Ты не был любим" to "You weren't loved",
@@ -37,5 +40,7 @@ class PassiveVoice : Learnable {
         return LessonCreator().createLesson(learningTypeSection, lessonTexts, appLessonTexts)
     }
 
-
+    override fun receiveHintPictureId(): Int {
+        return hintPictureId
+    }
 }

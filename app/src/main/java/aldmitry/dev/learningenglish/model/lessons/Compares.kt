@@ -1,13 +1,16 @@
 package aldmitry.dev.learningenglish.model.lessons
 
+import aldmitry.dev.learningenglish.R
 import aldmitry.dev.learningenglish.model.Learnable
 import aldmitry.dev.learningenglish.presenter.LearningTypeSection
 import aldmitry.dev.learningenglish.presenter.LessonCreator
 import aldmitry.dev.learningenglish.presenter.LessonUnit
 
-class Compares : Learnable {
+class Compares : Learnable { // , Hintable
 
     private val title = "Сравнения"
+
+    private val hintPictureId = R.drawable.compares
 
     private val appLessonTexts = mapOf("Ты выше других" to "You are taller than others", "Эта машина самая быстрая" to "this car is the fastest", "Анна самая умная в классе" to "Anna is the cleverest in the class",
         "Моя машина быстрее твоей" to "My car is faster than your", "Эта дорога была самой короткой" to "this road was the shortest", "Сегодня она выглядит лучше, чем вчера" to "today she looks better than yesterday",
@@ -26,5 +29,8 @@ class Compares : Learnable {
         return LessonCreator().createLesson(learningTypeSection, lessonTexts, appLessonTexts)
     }
 
+    override fun receiveHintPictureId(): Int {
+        return hintPictureId
+    }
 
 }

@@ -19,6 +19,7 @@ class LearningProcessor(
     private val lessonUnits: List<LessonUnit>
 ) {
 
+
     suspend fun process() {
         val previewLessonText = lessonUnit.value.englishText
 

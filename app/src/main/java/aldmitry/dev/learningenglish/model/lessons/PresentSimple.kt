@@ -1,5 +1,6 @@
 package aldmitry.dev.learningenglish.model.lessons
 
+import aldmitry.dev.learningenglish.R
 import aldmitry.dev.learningenglish.model.Learnable
 import aldmitry.dev.learningenglish.presenter.LearningTypeSection
 import aldmitry.dev.learningenglish.presenter.LessonCreator
@@ -9,7 +10,7 @@ class PresentSimple : Learnable {
 
     private val title = "Present simple"
 
-    private val presentSimple: Map<String, String> = mapOf("Ты пойдешь домой" to "You will go home", "Ты не пойдешь домой" to "You will not go home", "Ты ходил домой" to "You went home")
+    private val hintPictureId = R.drawable.present_simple
 
 
     private val appLessonTexts = mapOf("Я люблю" to "I love", "Я не люблю" to "I do not love", "Я люблю?" to "do I love", "Я буду любить" to "I will love", "Я не буду любить" to "I will not love", "Я буду любить?" to "will I love",
@@ -51,6 +52,10 @@ class PresentSimple : Learnable {
 
     override fun takeLesson(learningTypeSection: LearningTypeSection, lessonTexts: Map<String, String>): List<LessonUnit> {
         return LessonCreator().createLesson(learningTypeSection, lessonTexts, appLessonTexts)
+    }
+
+    override fun receiveHintPictureId(): Int {
+        return hintPictureId
     }
 
 }

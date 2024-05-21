@@ -1,5 +1,6 @@
 package aldmitry.dev.learningenglish.model.lessons
 
+import aldmitry.dev.learningenglish.R
 import aldmitry.dev.learningenglish.model.Learnable
 import aldmitry.dev.learningenglish.presenter.LearningTypeSection
 import aldmitry.dev.learningenglish.presenter.LessonCreator
@@ -8,6 +9,8 @@ import aldmitry.dev.learningenglish.presenter.LessonUnit
 class DateAndTime : Learnable {
 
     private val title = "Дата и время"
+
+    private val hintPictureId = R.drawable.date_time
 
     private val appLessonTexts = mapOf("Сейчас пять минут пятого" to "it’s five past four", "Сейчас полшестого" to "it’s half past five", "Сейчас без четверти восемь" to "it’s quarter to eight",
         "Сейчас без двух минут час" to "it’s two minutes to one", "Я приду к нему в понедельник" to "I will come to him on Monday", "Они придут к ним во вторник" to "they will come to them on Tuesday",
@@ -34,6 +37,10 @@ class DateAndTime : Learnable {
 
     override fun takeLesson(learningTypeSection: LearningTypeSection, lessonTexts: Map<String, String>): List<LessonUnit> {
         return LessonCreator().createLesson(learningTypeSection, lessonTexts, appLessonTexts)
+    }
+
+    override fun receiveHintPictureId(): Int {
+        return hintPictureId
     }
 
 }
