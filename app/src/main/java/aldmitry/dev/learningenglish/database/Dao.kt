@@ -17,6 +17,7 @@ interface Dao {
     @Delete
     fun deleteLessonInDb(entity: UserLesson)
 
+
     @Update
     fun replaceLessonInDb(oldEntity: UserLesson, newEntity: UserLesson)
 

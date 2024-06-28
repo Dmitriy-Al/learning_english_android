@@ -5,8 +5,8 @@ class LessonCreator {
     private val randomWords = listOf("I", "You", "he", "she", "they", "him", "her", "it", "them",
         "mine", "always", "our", "itself", "myself", "herself", "yourselves", "themselves",
         "ourselves", "himself", "those", "these", "that", "what", "which", "whose", "who", "whom",
-        "me", "at", "is", "to", "am", "go", "for", "in", "us", "be", "then", "if", "yes", "went",
-        "are", "will", "want")
+        "me", "at", "to", "am", "go", "for", "in", "us", "be", "then", "if", "yes", "went",
+        "are", "will", "want", "see", "take")
 
 
     fun createLesson(

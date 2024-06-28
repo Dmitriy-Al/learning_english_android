@@ -12,7 +12,6 @@ class PerfectTense : Learnable {
 
     private val hintPictureId = R.drawable.perfect_tence
 
-
     private val appLessonTexts = mapOf("Я (сейчас) посмотрел фильм" to "I have seen the movie", "Я (когда-то в прошлом) смотрел этот фильм" to "I had seen this movie",
         "Я увижу этот фильм к вечеру" to "I will have seen this movie by evening", "У него (к настоящему моменту) была собака" to "he has had a dog", "У него (когда-то в прошлом) была собака" to "he had had a dog",
         "У него будет собака" to "he will have had a dog", "Ты находишься здесь год" to "You have been here for a year", "Ты находился здесь год" to "You had been here for a year",
@@ -22,7 +21,7 @@ class PerfectTense : Learnable {
         "Я закончу работу (моя работа будет законченной) завтра к 5 часам" to "I will have finished my work tomorrow by 5 o’clock", "Они уже приехали" to "they have arrived already",
         "Мы не услышали" to "we haven't heard", "Я (к настоящему моменту) писал книгу" to "I have written a book", "Я (к настоящему моменту) никогда не писал книгу" to "I have newer written a book",
         "Я (сейчас) писал книгу?" to "have I written a book", "Я буду писать книгу" to "I will have written a book", "Я не буду писать книгу" to "I won't have written a book",
-        "Я буду писать книгу?" to "will I have written a book", "Мы услышали" to "we have heard", "Я (когда-то в прошлом) писал книгу" to "I had written a book",
+        "Я буду писать книгу?" to "will I have written a book", "Мы услышали (сейчас)" to "we have heard", "Я (когда-то в прошлом) писал книгу" to "I had written a book",
         "Я (когда-то в прошлом) не писал книгу" to "I hadn't written a book", "Я писал книгу? (когда-то в прошлом)" to "had I written a book", "Мы услышали? (сейчас)" to "have we heard",
         "Мы будем слышать" to "we will have heard", "Мы не будем слышать" to "we won't have heard", "Мы будем слышать?" to "will we have heard", "Мы слышали (когда-то в прошлом)" to "we had heard",
         "Мы не слышали (когда-то в прошлом)" to "we hadn't heard", "Мы слышали? (когда-то в прошлом)" to "had we heard", "Она (сейчас) читала книгу " to "she has read a book",
@@ -33,6 +32,7 @@ class PerfectTense : Learnable {
         "Ты будешь учить Английский язык" to "You will have learned English", "Ты не будешь учить Английский язык" to "You won't have learned English",
         "Ты будешь учить Английский язык?" to "will You have learned English", "Ты выучил Английский язык (когда-то в прошлом)" to "You had learned English",
         "Ты не выучил Английский язык (когда-то в прошлом)" to "You hadn't learned English", "Ты учил Английский язык? (когда-то в прошлом)" to "had You learned English")
+
 
     override fun receiveTitle(): String {
         return title

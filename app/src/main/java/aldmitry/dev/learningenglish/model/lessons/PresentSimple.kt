@@ -12,7 +12,6 @@ class PresentSimple : Learnable {
 
     private val hintPictureId = R.drawable.present_simple
 
-
     private val appLessonTexts = mapOf("Я люблю" to "I love", "Я не люблю" to "I do not love", "Я люблю?" to "do I love", "Я буду любить" to "I will love", "Я не буду любить" to "I will not love", "Я буду любить?" to "will I love",
         "Я любил" to "I loved", "Я не любил" to "I did not love", "Я любил?" to "did I love", " Я иду" to "I go", "Я не иду" to "I do not go", "Я иду?" to "do I go", "Я буду ходить" to "I will go",
         "Я не буду ходить" to "I will not go", "Я буду ходить?" to "will I go", "Я ходил" to "I went", "Я не ходил" to "I did not go", "Я ходил?" to "did I go", " Я смотрю" to "I look", "Я не смотрю" to "I do not look",
@@ -45,6 +44,7 @@ class PresentSimple : Learnable {
         "Это выглядело как яблоко?" to "did it look like an apple", "Мы смотрим на него" to "we look at him", "Мы не смотрим на него" to "we don't look at him", "Мы смотрим на него?" to "do we look at him",
         "Мы будем смотреть на него" to "we will look at him", "Мы не будем смотреть на него" to "we won't look at him", "Мы будем смотреть на него?" to "will we look at him", "Мы смотрели на него" to "we looked at him",
         "Мы не смотрели на него" to "we didn't look at him", "Мы смотрели на него?" to "did we look at him")
+
 
     override fun receiveTitle(): String {
         return title

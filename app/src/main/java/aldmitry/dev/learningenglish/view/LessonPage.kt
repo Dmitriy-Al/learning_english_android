@@ -1,7 +1,7 @@
 package aldmitry.dev.learningenglish.view
 
-import aldmitry.dev.learningenglish.addTextScreen_view
 import aldmitry.dev.learningenglish.model.Learnable
+import aldmitry.dev.learningenglish.textEdition_view
 import aldmitry.dev.learningenglish.training_view
 import aldmitry.dev.learningenglish.ui.theme.Blue10
 import aldmitry.dev.learningenglish.ui.theme.Green50
@@ -24,12 +24,11 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 
-// @Preview(showBackground = true)
 @Composable
 fun LessonPage(buttonClick: () -> Unit, controllerText: MutableState<String>, chooseLesson: MutableState<Learnable>, lesson: Learnable) {
     Card(
@@ -71,69 +70,19 @@ fun LessonPage(buttonClick: () -> Unit, controllerText: MutableState<String>, ch
                 border = BorderStroke(1.dp, Color.White),
                 shape = RoundedCornerShape(10.dp),
                 onClick = {
-                    controllerText.value = addTextScreen_view
+                    controllerText.value = textEdition_view
                     chooseLesson.value = lesson
                     buttonClick()
                    }
             ) {
                 Text(
-                    text = " Добавить\nсвой текст",
+                    text = "Добавить\nсвой текст",
                     color = Blue10,
                     fontSize = 12.sp,
-                    modifier = Modifier.padding(5.dp)
+                    modifier = Modifier.padding(5.dp),
+                    textAlign = TextAlign.Center
                 )
             }
-        }
-    }
-}
-
-
-@Preview(showBackground = true)
-@Composable
-fun LessonPage() {
-    Card(
-        elevation = 5.dp,
-        modifier = Modifier
-            .height(70.dp)
-            .fillMaxWidth()
-            .padding(top = 10.dp, start = 10.dp, end = 10.dp)
-            .clickable {
-
-            },
-        backgroundColor = Green50,
-        shape = RoundedCornerShape(10.dp)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "Present Simple",
-                color = Color.White,
-                fontSize = 20.sp,
-                modifier = Modifier
-                    .weight(1F)
-                    .padding(10.dp)
-            )
-
-            TextButton(
-                colors = ButtonDefaults.textButtonColors(contentColor = Yellow30),
-                modifier = Modifier
-                    .padding(3.dp)
-                    .background(Yellow30, RoundedCornerShape(10.dp)),
-                border = BorderStroke(2.dp, Color.White),
-                shape = RoundedCornerShape(10.dp),
-                onClick = { /*TODO*/ }
-            ) {
-                Text(
-                    text = " Добавить\nсвой текст",
-                    color = Color.White,
-                    fontSize = 12.sp,
-                    modifier = Modifier.padding(5.dp)
-                )
-            }
-
         }
     }
 }

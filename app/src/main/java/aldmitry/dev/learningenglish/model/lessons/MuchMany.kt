@@ -12,7 +12,6 @@ class MuchMany : Learnable {
 
     private val hintPictureId = R.drawable.many
 
-
     private val appLessonTexts = mapOf("Много столов" to "many tables", "Много ложек" to "many spoons", "Много яблок" to "many apples", "Много денег" to "much money",
         "Было найдено много информации" to "much information has been found", "Много столов" to "many tables", "У них мало денег" to "they have little money", "У них мало монет" to "they have few coins",
         "Они имеют много денег" to "they have got much money", "У них много монет" to "they have many coins", "Многие из них" to "a lot of them", "Она ему очень нравится" to "he likes her a lot",
@@ -26,9 +25,11 @@ class MuchMany : Learnable {
         return title
     }
 
+
     override fun takeLesson(learningTypeSection: LearningTypeSection, lessonTexts: Map<String, String>): List<LessonUnit> {
         return LessonCreator().createLesson(learningTypeSection, lessonTexts, appLessonTexts)
     }
+
 
     override fun receiveHintPictureId(): Int {
         return hintPictureId

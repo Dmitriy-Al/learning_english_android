@@ -144,7 +144,6 @@ fun UserLessonPage(
                         modifier = Modifier.padding(5.dp)
                     )
                 }
-
             }
 
             Column(

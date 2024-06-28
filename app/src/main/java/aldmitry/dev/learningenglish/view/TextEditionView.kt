@@ -3,7 +3,6 @@ package aldmitry.dev.learningenglish.view
 import aldmitry.dev.learningenglish.database.UserLesson
 import aldmitry.dev.learningenglish.presenter.LessonsRepository
 import aldmitry.dev.learningenglish.ui.theme.Blue10
-import aldmitry.dev.learningenglish.ui.theme.Blue15
 import aldmitry.dev.learningenglish.ui.theme.Blue30
 import aldmitry.dev.learningenglish.ui.theme.Red30
 import aldmitry.dev.learningenglish.ui.theme.Yellow30
@@ -13,7 +12,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -64,7 +62,6 @@ fun TextEditionView(lessonTitle: String, repository: LessonsRepository) {
     val lessonList = remember {
         mutableStateOf<List<UserLesson>>(listOf())
     }
-
 
     val isValidText = englishText.value.length < 70 && !englishText.value.contains("  ") &&
             englishText.value.split(" ").size <= 10 &&

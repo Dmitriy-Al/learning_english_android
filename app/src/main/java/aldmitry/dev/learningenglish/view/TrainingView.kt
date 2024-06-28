@@ -1,5 +1,6 @@
 package aldmitry.dev.learningenglish.view
 
+import aldmitry.dev.learningenglish.model.settings.SettingsData
 import aldmitry.dev.learningenglish.presenter.LearningProcessor
 import aldmitry.dev.learningenglish.presenter.LessonUnit
 import aldmitry.dev.learningenglish.ui.theme.Blue10
@@ -8,7 +9,6 @@ import aldmitry.dev.learningenglish.ui.theme.Blue30
 import aldmitry.dev.learningenglish.ui.theme.Green30
 import aldmitry.dev.learningenglish.ui.theme.Green50
 import aldmitry.dev.learningenglish.ui.theme.Red30
-import aldmitry.dev.learningenglish.ui.theme.Yellow30
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -61,7 +61,7 @@ const val topText_field = "Переведите текст:\n"
 
 
 @Composable
-fun TrainingView(lessonUnits: List<LessonUnit>, hintPictureId: Int) {
+fun TrainingView(lessonUnits: List<LessonUnit>, settings: MutableState<SettingsData>, hintPictureId: Int) {
 
     val lessonUnit = remember { // урок
         mutableStateOf(lessonUnits[(lessonUnits.indices).random()])
@@ -95,32 +95,18 @@ fun TrainingView(lessonUnits: List<LessonUnit>, hintPictureId: Int) {
         mutableStateOf(0)
     }
 
-    val lp = LearningProcessor(
-        lessonUnit,
-        keyBoardField,
-        isAnswer,
-        answerCounter,
-        topScreenText,
-        bottomScreenText,
-        lessonUnits
-    )
+    val learningProcessor = LearningProcessor(answerCounter, lessonUnits, settings)
 
 
     LaunchedEffect(topScreenText.value, bottomScreenText.value) {
         CoroutineScope(Dispatchers.IO).launch {
-            /*
-            LearningProcessor(
+            learningProcessor.process(
+                isAnswer,
                 lessonUnit,
                 keyBoardField,
-                isAnswer,
-                answerCounter,
                 topScreenText,
-                bottomScreenText,
-                lessonUnits
-            ).process()
-             */
-
-            lp.process()
+                bottomScreenText
+            )
         }
     }
 
@@ -154,7 +140,7 @@ fun TrainingView(lessonUnits: List<LessonUnit>, hintPictureId: Int) {
                 text = "Ответов: ${answerCounter.value}",
                 style = TextStyle(color = Color.White, fontSize = 18.sp),
                 textAlign = TextAlign.Start
-            ) // TODO/////////////////////////////////////////////////////////////////////////////////////////////////////
+            )
 
             if (hintPictureId != 0) {
                 TextButton(
@@ -178,7 +164,7 @@ fun TrainingView(lessonUnits: List<LessonUnit>, hintPictureId: Int) {
                     )
                 }
             }
-        }// TODO/////////////////////////////////////////////////////////////////////////////////////////////////////
+        }
 
         Column(
             modifier = Modifier
@@ -186,37 +172,41 @@ fun TrainingView(lessonUnits: List<LessonUnit>, hintPictureId: Int) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 5.dp, bottom = 10.dp, start = 30.dp, end = 30.dp),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        text = topScreenText.value,
-                        style = TextStyle(
-                            color = if (keyBoardField.value == answer_field) Green30 else Color.White,
-                            fontSize = 23.sp
-                        )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 5.dp, bottom = 10.dp, start = 30.dp, end = 30.dp),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = topScreenText.value,
+                    textAlign = TextAlign.Center,
+                    style = TextStyle(
+                        color = if (keyBoardField.value == answer_field) Green30 else Color.White,
+                        fontSize = 23.sp
                     )
-                }
+                )
+            }
 
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 5.dp, bottom = 5.dp, start = 30.dp, end = 30.dp),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        text = bottomScreenText.value,
-                        style = TextStyle(
-                            color = if (isAnswer.value) Red30 else Color.White,
-                            fontSize = 23.sp
-                        )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 5.dp, bottom = 5.dp, start = 30.dp, end = 30.dp),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = bottomScreenText.value,
+                    textAlign = TextAlign.Center,
+                    style = TextStyle(
+                        color = if (isAnswer.value) Red30 else Color.White,
+                        fontSize = 23.sp
                     )
-                }
+                )
+            }
 
-            if (displayField.value == hint_field && keyBoardField.value != answer_field) HintScreen(hintPictureId, isZoomed) // TODO
+            if (displayField.value == hint_field && keyBoardField.value != answer_field) {
+                HintScreen(hintPictureId, isZoomed)
+            }
         }
 
         Column(
@@ -233,6 +223,7 @@ fun TrainingView(lessonUnits: List<LessonUnit>, hintPictureId: Int) {
         }
     }
 }
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -645,47 +636,48 @@ fun Keyboard(keyList: List<String>, inputtedText: MutableState<String>) {
     }
 }
 
+
 @Composable
 fun HintScreen(hintPictureId: Int, isZoomed: MutableState<Boolean>) {
 
-        if (isZoomed.value) {
-            Row (
-                modifier = Modifier
-                    .padding(top = 10.dp, bottom = 5.dp)
-                    .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState())
-                    .clickable { isZoomed.value = !isZoomed.value },
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .verticalScroll(rememberScrollState()),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Image(
-                        painter = painterResource(id = hintPictureId),
-                        contentDescription = "hint_picture",
-                        contentScale = ContentScale.Crop
-                    )
-                }
-            }
-        } else {
+    if (isZoomed.value) {
+        Row(
+            modifier = Modifier
+                .padding(top = 10.dp, bottom = 5.dp)
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState())
+                .clickable { isZoomed.value = !isZoomed.value },
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Column(
                 modifier = Modifier
-                    .clickable { isZoomed.value = !isZoomed.value }
-                    .padding(top = 10.dp, bottom = 5.dp)
-                    .fillMaxWidth(),
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
                 Image(
                     painter = painterResource(id = hintPictureId),
-                    contentDescription = "hint picture",
-                    contentScale = ContentScale.Fit
+                    contentDescription = "hint_picture",
+                    contentScale = ContentScale.Crop
                 )
             }
         }
+    } else {
+        Column(
+            modifier = Modifier
+                .clickable { isZoomed.value = !isZoomed.value }
+                .padding(top = 10.dp, bottom = 5.dp)
+                .fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Image(
+                painter = painterResource(id = hintPictureId),
+                contentDescription = "hint picture",
+                contentScale = ContentScale.Fit
+            )
+        }
+    }
 }

@@ -1,5 +1,6 @@
 package aldmitry.dev.learningenglish.presenter
 
+import aldmitry.dev.learningenglish.model.settings.SettingsData
 import aldmitry.dev.learningenglish.view.answer_field
 import aldmitry.dev.learningenglish.view.input_field
 import aldmitry.dev.learningenglish.view.keyboard_field
@@ -10,48 +11,31 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 
 class LearningProcessor(
-    private val lessonUnit: MutableState<LessonUnit>,
-    private val keyBoardField: MutableState<String>,
-    private val isAnswer: MutableState<Boolean>,
     private val answerCounter: MutableState<Int>,
-    private val topScreenText: MutableState<String>,
-    private val bottomScreenText: MutableState<String>,
-    private val lessonUnits: List<LessonUnit>
+    private val lessonUnits: List<LessonUnit>,
+    private val settings: MutableState<SettingsData>
 ) {
 
-
-    suspend fun process() {
-        val previewLessonText = lessonUnit.value.englishText
-
+    suspend fun process(
+        isAnswer: MutableState<Boolean>,
+        lessonUnit: MutableState<LessonUnit>,
+        keyBoardField: MutableState<String>,
+        topScreenText: MutableState<String>,
+        bottomScreenText: MutableState<String>,
+    ) {
         when {
-            lessonUnit.value.keyButtonsWords.isEmpty() && bottomScreenText.value.isNotEmpty() &&
-                    !isAnswer.value || bottomScreenText.value.isNotEmpty() &&
-                    lessonUnit.value.englishText.split(" ").size == bottomScreenText.value.trim()
-                .split(" ").size -> {
-                if (bottomScreenText.value.trim().equals(lessonUnit.value.englishText, ignoreCase = true)
-                ) {
-                    answerCounter.value++
-                    topScreenText.value = "✔ ${lessonUnit.value.englishText}" // оригинальный eng текст на экране
-                    bottomScreenText.value = ""
-                    var newLessonUnit = lessonUnits[(lessonUnits.indices).random()]
-
-                    if (lessonUnits.size > 1) {
-                        for (i in 0..10) { // цикл конечен для того случая, когда englishText == ruText и урок инвертирован
-                            if (newLessonUnit.englishText != previewLessonText) {
-                                break
-                            } else {
-                                newLessonUnit = lessonUnits[(lessonUnits.indices).random()]
-                            }
-                        }
-                    }
-                    lessonUnit.value = newLessonUnit
-                } else {
-                    topScreenText.value =  "✔ ${lessonUnit.value.englishText}" // оригинальный eng текст на экране
-                    bottomScreenText.value = "✘ ${bottomScreenText.value}" // user eng текст на экране
-                }
-                isAnswer.value = true
-                keyBoardField.value = answer_field
-            }
+            !isAnswer.value && // если экран с правильным ответом не запущен
+                    bottomScreenText.value.isNotEmpty() && // если поле с введенным ответом не пустое
+                    lessonUnit.value.englishText.split(" ").size == bottomScreenText.value.trim() // если количество слов в задании соответствует количеству введенных слов
+                .split(" ").size ||
+                    lessonUnit.value.keyButtonsWords.isEmpty() -> showAnswer( // если в LessonUnit List со словами для клавиатуры пуст (все 10 введены)
+                    lessonUnit,
+                    keyBoardField,
+                    isAnswer,
+                    topScreenText,
+                    bottomScreenText,
+                    answerCounter,
+                    lessonUnits)
 
             keyBoardField.value == keyboard_field || keyBoardField.value == input_field -> {
                 topScreenText.value = "$topText_field${lessonUnit.value.russianText}"
@@ -62,12 +46,12 @@ class LearningProcessor(
                 if (bottomScreenText.value.isEmpty()) {
                     withContext(Dispatchers.IO) {
                         isAnswer.value = false
-                        delay(2000)
-                        restartScreen()
+                        delay(settings.value.answerShowTime * 1000)
+                        restartScreen(lessonUnit, keyBoardField, topScreenText, bottomScreenText)
                     }
                 } else {
                     if (topScreenText.value.isEmpty()) {
-                        restartScreen()
+                        restartScreen(lessonUnit, keyBoardField, topScreenText, bottomScreenText)
                         isAnswer.value = false
                     }
                 }
@@ -76,7 +60,62 @@ class LearningProcessor(
     }
 
 
-    private fun restartScreen() {
+    private fun showAnswer(
+        lessonUnit: MutableState<LessonUnit>,
+        keyBoardField: MutableState<String>,
+        isAnswer: MutableState<Boolean>,
+        topScreenText: MutableState<String>,
+        bottomScreenText: MutableState<String>,
+        answerCounter: MutableState<Int>,
+        lessonUnits: List<LessonUnit>
+    ) {
+        isAnswer.value = true
+        keyBoardField.value = answer_field
+        val previewLessonText = lessonUnit.value.englishText
+
+        if (bottomScreenText.value.trim().equals(lessonUnit.value.englishText, ignoreCase = true)
+        ) {
+            answerCounter.value++
+            topScreenText.value =
+                "✔ ${lessonUnit.value.englishText}" // оригинальный eng текст на экране
+            bottomScreenText.value = ""
+
+            if (lessonUnits.size > 1) {
+                lessonUnit.value = receiveNextLessonUnit(previewLessonText)
+            }
+
+        } else {
+            topScreenText.value =
+                "✔ ${lessonUnit.value.englishText}" // оригинальный eng текст на экране
+            bottomScreenText.value = "✘${bottomScreenText.value}" // user eng текст на экране
+
+            if (lessonUnits.size > 1 && !settings.value.repeatWrongLesson) {
+                lessonUnit.value = receiveNextLessonUnit(previewLessonText)
+            }
+        }
+    }
+
+
+    private fun receiveNextLessonUnit(previewLessonText: String): LessonUnit {
+        var newLessonUnit = lessonUnits[(lessonUnits.indices).random()]
+
+        for (i in 0..10) { // цикл конечен для того случая, когда englishText == ruText и урок инвертирован
+            if (newLessonUnit.englishText != previewLessonText) {
+                break
+            } else {
+                newLessonUnit = lessonUnits[(lessonUnits.indices).random()]
+            }
+        }
+        return newLessonUnit
+    }
+
+
+    private fun restartScreen(
+        lessonUnit: MutableState<LessonUnit>,
+        keyBoardField: MutableState<String>,
+        topScreenText: MutableState<String>,
+        bottomScreenText: MutableState<String>
+    ) {
         if (lessonUnit.value.keyButtonsWords.isEmpty()) {
             keyBoardField.value = input_field
         } else {
@@ -85,6 +124,5 @@ class LearningProcessor(
         topScreenText.value = "" // Текст для перевода на экране
         bottomScreenText.value = ""
     }
-
 
 }

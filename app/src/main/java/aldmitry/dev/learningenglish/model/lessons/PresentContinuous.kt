@@ -19,7 +19,7 @@ class PresentContinuous : Learnable {
         "Лондон был столицей Великобритании?" to "was London the capital of Great Britain", "Я голодный" to "I'm hungry", "Я не голодный" to "I'm not hungry", "Я голодный?" to "am I hungry",
         "Я буду голодным" to "I'll be hungry", "Я не буду голодным" to "I won't be hungry", "Я буду голодным?" to "will I be hungry", "Я был голодный" to "I was hungry", "Я не был голодный" to "I wasn't hungry",
         "Я был голодный?" to "was I hungry", "Я сплю сейчас" to "I am sleeping now", "Я не сплю сейчас" to "I am not sleeping now", "Я сплю сейчас?" to "am I sleeping now",
-        "Я - иду" to "I am going", "Я не иду" to "I'm not going", "Я иду?" to "am I going", "Я буду идти" to "I will be going", "Я не буду идти" to "I will not be going", "Я буду идти?" to "will I be going",
+        "Я иду" to "I am going", "Я не иду" to "I'm not going", "Я иду?" to "am I going", "Я буду идти" to "I will be going", "Я не буду идти" to "I will not be going", "Я буду идти?" to "will I be going",
         "Я шёл" to "I was going", "Я не шёл" to "I was not going", "Я шёл?" to "was I going", "Он бледный" to "he is pale", "Он не бледный" to "he is not pale", "Он бледный?" to "is he pale",
         "Он будет бледный" to "he will be pale", "Он не будет бледный" to "he will not be pale", "Он будет бледный?" to "will he be pale", "Он был бледный" to "he was pale",
         "Он не был бледный" to "he was not pale", "Он был бледный?" to "was he pale", "Он поет песню" to "he is singing a song", "Он не поет песню" to "he is not singing a song",
@@ -35,6 +35,7 @@ class PresentContinuous : Learnable {
         "Ты тренируешься" to "You are training", "Ты не тренируешься" to "You aren't training", "Ты тренируешься?" to "are You training", "Ты будешь тренироваться" to "You will be training",
         "Ты не будешь тренироваться" to "You won't be training", "Ты будешь тренироваться?" to "will You be training", "Ты тренировался" to "You were training", "Ты не тренировался" to "You weren't training",
         "Ты тренировался?" to "were You training", "Я сплю сейчас" to "I am sleeping now", "Я не сплю сейчас" to "I am not sleeping now", "Я сплю сейчас?" to "am I sleeping now")
+
 
     override fun receiveTitle(): String {
         return title

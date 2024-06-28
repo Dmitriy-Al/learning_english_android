@@ -23,22 +23,25 @@ class PassiveVoice : Learnable {
         "Машину заправляют сейчас" to "the car is being refueled now", "Экзамен сдавали вчера утром" to "the exam was being taken yesterday morning",
         "Эти цветы уже полили" to "this flowers have already been watered", "Статью перепишут к завтрашнему утру" to "the article will have been rewritten by tomorrow morning",
         "Марли был мертв" to "Marley was dead", "Моя машина уже угнана" to "my car has been stolen", "Эта книга была написана не им" to "this book was not written by him",
-        "Меня нечасто приглашают на вечеринки" to "I am not often invited to the parties", "Подарок еще не привезли" to "The gift has not been bought yet",
+        "Меня нечасто приглашают на вечеринки" to "I am not often invited to the parties", "Подарок еще не привезли" to "The gift is has not been bought yet",
         "Кот не был накормлен им вчера" to "the cat was not fed by him yesterday", "Кота не часто оставляли голодным" to "the cat was not often left hungry",
         "Вам объяснили это домашнее задание?" to "has this homework been explained to you", "Задача обсуждалась, когда я вошел в класс" to "the task was being discussed when I entered the class",
         "Письмо будет написанным к следующему утру" to "the letter will have been written by the next morning", "Письмо будет написано на следующий день" to "the letter will be written the next day",
-        "Собака была накормлена вчера" to "the dog was fed yesterday", "Собака будет накормленной завтра»" to "the dog will be fed tomorrow",
+        "Собака была накормлена вчера" to "the dog was fed yesterday", "Собака будет накормленной завтра" to "the dog will be fed tomorrow",
         "Собаку кормят прямо в этот момент" to "the dog is being fed at the moment", "Собаку кормили, когда мы пришли" to "the dog was being fed when we come",
         "В 9 вечера собака будет накормлена" to "at nine o'clock tonight the dog will be being fed", "Собака недавно покормлена" to "the dog is has been fed recently",
         "Собака была покормлена до того, как я пришёл»" to "the dog was had been fed before I came", "Собака будет покормленной к 9 часам" to "the dog will have been fed by nine o’clock")
+
 
     override fun receiveTitle(): String {
         return title
     }
 
+
     override fun takeLesson(learningTypeSection: LearningTypeSection, lessonTexts: Map<String, String>): List<LessonUnit> {
         return LessonCreator().createLesson(learningTypeSection, lessonTexts, appLessonTexts)
     }
+
 
     override fun receiveHintPictureId(): Int {
         return hintPictureId

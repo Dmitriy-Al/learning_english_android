@@ -16,7 +16,7 @@ val DeepPurple = Color(0xFF23003D)
 
 val Green60 = Color(0xFF017957) // 0xFF16C2A8
 val Green50 = Color(0xFF03A376) // 0xFF16C2A8
-val Green30 = Color(0xFF5DEC63) // 0xFF16C2A8
+val Green30 = Color(0xFF65FF6C) // 0xFF65FF6C
 
 val Blue30 = Color(0xFF099EB1) // 0xFF1DA3C4
 val Blue15 = Color(0xFF24698F) // 0xFF24698F
@@ -25,4 +25,4 @@ val Blue5 = Color(0xFFC79D32) // 0xFF00486F
 
 val Yellow30 = Color(0xFFFACE2E) // 0xFF00486F
 
-val Red30 = Color(0xFFFF5F5F) // 0xFF00486F
+val Red30 = Color(0xFFFF7F7F) // 0xFFFF5F5F
