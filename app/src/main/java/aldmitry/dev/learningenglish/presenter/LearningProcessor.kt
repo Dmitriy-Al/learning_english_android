@@ -23,12 +23,11 @@ class LearningProcessor(
         topScreenText: MutableState<String>,
         bottomScreenText: MutableState<String>,
     ) {
-        when {
+        when { // запуск экрана с ответом
+            bottomScreenText.value.isNotEmpty() && // если поле с введенным ответом не пустое
             !isAnswer.value && // если экран с правильным ответом не запущен
-                    bottomScreenText.value.isNotEmpty() && // если поле с введенным ответом не пустое
-                    lessonUnit.value.englishText.split(" ").size == bottomScreenText.value.trim() // если количество слов в задании соответствует количеству введенных слов
-                .split(" ").size ||
-                    lessonUnit.value.keyButtonsWords.isEmpty() -> showAnswer( // если в LessonUnit List со словами для клавиатуры пуст (все 10 введены)
+                    bottomScreenText.value.trim().split(" ").size >= // если количество слов в задании соответствует/меньше количества введенных слов
+                    lessonUnit.value.englishText.split(" ").size -> showAnswer(
                     lessonUnit,
                     keyBoardField,
                     isAnswer,
@@ -37,20 +36,21 @@ class LearningProcessor(
                     answerCounter,
                     lessonUnits)
 
+            // запуск экрана с заданием
             keyBoardField.value == keyboard_field || keyBoardField.value == input_field -> {
                 topScreenText.value = "$topText_field${lessonUnit.value.russianText}"
             }
 
-            // если введенный текст отсутствует и поле ввода показывает ответ, запускается таймер показа экрана
+            // если введенный текст отсутствует и поле ввода показывает ответ, запускается таймер показа экрана с ответом
             isAnswer.value && keyBoardField.value == answer_field -> {
-                if (bottomScreenText.value.isEmpty()) {
+                if (bottomScreenText.value.isEmpty()) { // если ответ правильный
                     withContext(Dispatchers.IO) {
                         isAnswer.value = false
                         delay(settings.value.answerShowTime * 1000)
                         restartScreen(lessonUnit, keyBoardField, topScreenText, bottomScreenText)
                     }
                 } else {
-                    if (topScreenText.value.isEmpty()) {
+                    if (topScreenText.value.isEmpty()) { // если ответ неправильный
                         restartScreen(lessonUnit, keyBoardField, topScreenText, bottomScreenText)
                         isAnswer.value = false
                     }
@@ -87,7 +87,7 @@ class LearningProcessor(
         } else {
             topScreenText.value =
                 "✔ ${lessonUnit.value.englishText}" // оригинальный eng текст на экране
-            bottomScreenText.value = "✘${bottomScreenText.value}" // user eng текст на экране
+            bottomScreenText.value = "✘ ${bottomScreenText.value}" // user eng текст на экране
 
             if (lessonUnits.size > 1 && !settings.value.repeatWrongLesson) {
                 lessonUnit.value = receiveNextLessonUnit(previewLessonText)

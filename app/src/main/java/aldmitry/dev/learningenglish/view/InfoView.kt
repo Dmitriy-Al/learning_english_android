@@ -13,6 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 
@@ -30,7 +31,8 @@ fun InfoView(text: String, textSize: TextUnit) {
         Text(
             modifier = Modifier.padding(15.dp),
             text = text,
-            style = TextStyle(color = Color.White, fontSize = textSize)
+            style = TextStyle(color = Color.White, fontSize = textSize),
+            textAlign = TextAlign.Center
         )
     }
 

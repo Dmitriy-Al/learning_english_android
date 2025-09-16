@@ -26,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.CoroutineScope
@@ -53,13 +54,15 @@ fun SettingsView(dataStoreHandler: DataStoreHandler, settings: MutableState<Sett
         Text(
             modifier = Modifier.padding(5.dp),
             text = "Меню настроек",
-            style = TextStyle(color = Color.White, fontSize = 25.sp)
+            style = TextStyle(color = Color.White, fontSize = 25.sp),
+            textAlign = TextAlign.Center
         )
 
         Text(
             modifier = Modifier.padding(top = 30.dp, start = 20.dp, end = 20.dp, bottom = 5.dp),
-            text = "Включить/отключить повторное выполнение задачи при неверном ответе",
-            style = TextStyle(color = Color.White, fontSize = 18.sp)
+            text = "Включить/отключить повторное выполнение задания при неверном ответе",
+            style = TextStyle(color = Color.White, fontSize = 18.sp),
+            textAlign = TextAlign.Center
         )
 
         Row(
@@ -111,7 +114,8 @@ fun SettingsView(dataStoreHandler: DataStoreHandler, settings: MutableState<Sett
         Text(
             modifier = Modifier.padding(top = 30.dp, start = 20.dp, end = 20.dp, bottom = 5.dp),
             text = "Время демонстрации правильного ответа",
-            style = TextStyle(color = Color.White, fontSize = 18.sp)
+            style = TextStyle(color = Color.White, fontSize = 18.sp),
+            textAlign = TextAlign.Center
         )
 
         Row(

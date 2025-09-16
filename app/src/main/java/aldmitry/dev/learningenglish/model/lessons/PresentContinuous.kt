@@ -14,7 +14,7 @@ class PresentContinuous : Learnable {
 
     private val appLessonTexts = mapOf("Лондон - столица Великобритании" to "London is the capital of Great Britain", "Манчестер - не столица Великобритании" to "Manchester is not the capital of Great Britain",
         "Лондон - столица Великобритании?" to "is London the capital of Great Britain", "Лондон будет столицей Великобритании" to "London will be the capital of Great Britain",
-        "Манчестер - не будет столицей Великобритании" to "Manchester will not be the capital of Great Britain", "Будет Лондон столицей Великобритании?" to "will be London the capital of Great Britain",
+        "Манчестер - не будет столицей Великобритании" to "Manchester will not be the capital of Great Britain", "Будет Лондон столицей Великобритании?" to "will London be the capital of Great Britain",
         "Лондон был столицей Великобритании" to "London was the capital of Great Britain", "Манчестер - не был столицей Великобритании" to "Manchester was not the capital of Great Britain",
         "Лондон был столицей Великобритании?" to "was London the capital of Great Britain", "Я голодный" to "I'm hungry", "Я не голодный" to "I'm not hungry", "Я голодный?" to "am I hungry",
         "Я буду голодным" to "I'll be hungry", "Я не буду голодным" to "I won't be hungry", "Я буду голодным?" to "will I be hungry", "Я был голодный" to "I was hungry", "Я не был голодный" to "I wasn't hungry",
